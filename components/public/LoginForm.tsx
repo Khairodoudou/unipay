@@ -11,52 +11,12 @@ import {
   ShieldCheck,
   Building2,
   CheckCircle2,
-  Info,
   HelpCircle,
   Loader2,
-  Sparkles,
   KeyRound,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// Demo roles for university testing & evaluation
-const demoRoles = [
-  {
-    role: "عون الأجور (RH)",
-    name: "مصلحة الرواتب",
-    email: "paie@universite.dz",
-    badge: "RH / Paie",
-    badgeColor: "bg-teal-500/15 text-teal-300 border-teal-500/30",
-  },
-  {
-    role: "رئيس المصلحة",
-    name: "مصلحة المستخدمين",
-    email: "chef.service@universite.dz",
-    badge: "Chef Service",
-    badgeColor: "bg-purple-500/15 text-purple-300 border-purple-500/30",
-  },
-  {
-    role: "مدير الجامعة",
-    name: "إدارة الجامعة",
-    email: "directeur@universite.dz",
-    badge: "Directeur",
-    badgeColor: "bg-indigo-500/15 text-indigo-300 border-indigo-500/30",
-  },
-  {
-    role: "المراقب المالي",
-    name: "الرقابة المالية المعتمدة",
-    email: "cf@universite.dz",
-    badge: "Contrôleur",
-    badgeColor: "bg-amber-500/15 text-amber-300 border-amber-500/30",
-  },
-  {
-    role: "الموظف / الأستاذ",
-    name: "كشوف الرواتب",
-    email: "employe@universite.dz",
-    badge: "Employé",
-    badgeColor: "bg-sky-500/15 text-sky-300 border-sky-500/30",
-  },
-];
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -91,12 +51,6 @@ export default function LoginForm() {
         "تم التحقق بنجاح! نظام المصادقة وقواعد البيانات سيتم ربطهما في المرحلة 2 (Phase 2)."
       );
     });
-  }
-
-  function handleQuickFill(demoEmail: string) {
-    setEmail(demoEmail);
-    setPassword("UniPay2026!#");
-    setInfoMessage(null);
   }
 
   return (
@@ -219,7 +173,7 @@ export default function LoginForm() {
             </div>
           </div>
 
-          {/* Left Column: Form & Demo Access (7 cols on lg) */}
+          {/* Left Column: Form (7 cols on lg) */}
           <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-between">
             <div>
               {/* Form Title & Subtitle */}
@@ -253,7 +207,7 @@ export default function LoginForm() {
 
               {/* Main Form */}
               <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-                {/* Email Field with clear RTL label, start icon, and intuitive placeholder */}
+                {/* Email Field with clear RTL label and standard placeholder */}
                 <div className="flex flex-col gap-1.5">
                   <label
                     htmlFor="email"
@@ -304,7 +258,7 @@ export default function LoginForm() {
                   )}
                 </div>
 
-                {/* Password Field with intuitive text placeholder (NOT confusing fake dots) */}
+                {/* Password Field with Eye Icon on the RIGHT (à droite) */}
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
                     <label
@@ -339,7 +293,7 @@ export default function LoginForm() {
                       aria-describedby={passwordError ? "password-error" : undefined}
                       aria-invalid={passwordError ? "true" : undefined}
                       className={cn(
-                        "w-full h-12 px-4 pe-12 rounded-xl border text-sm bg-slate-50/70 placeholder:text-slate-400 transition-all font-mono",
+                        "w-full h-12 pr-12 pl-4 rounded-xl border text-sm bg-slate-50/70 placeholder:text-slate-400 transition-all font-mono",
                         "focus:outline-none focus:ring-2 focus:ring-uni-navy/20 focus:border-uni-navy focus:bg-white",
                         "disabled:opacity-50 disabled:cursor-not-allowed",
                         passwordError
@@ -348,12 +302,12 @@ export default function LoginForm() {
                       )}
                     />
 
-                    {/* Eye toggle button at end-0 (left in RTL) */}
+                    {/* Eye toggle button at right-0 (à droite dans l'input) */}
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       disabled={isPending}
-                      className="absolute inset-y-0 end-0 flex items-center px-4 text-slate-400 hover:text-slate-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-uni-navy rounded-e-xl disabled:opacity-50 cursor-pointer"
+                      className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 hover:text-slate-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-uni-navy rounded-r-xl disabled:opacity-50 cursor-pointer"
                       aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
                       title={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
                     >
@@ -428,37 +382,6 @@ export default function LoginForm() {
                   </div>
                 </div>
               )}
-
-              {/* Interactive Demo Roles Matrix for Evaluation */}
-              <div className="mt-8 pt-6 border-t border-slate-100">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-teal-600" />
-                    <span>حسابات تجريبية سريعة للمعاينة:</span>
-                  </p>
-                  <span className="text-[10px] text-slate-400">انقر للتعبئة الفورية</span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {demoRoles.map((role) => (
-                    <button
-                      key={role.email}
-                      type="button"
-                      onClick={() => handleQuickFill(role.email)}
-                      className="p-2.5 rounded-xl border border-slate-200/90 bg-slate-50/60 hover:bg-blue-50/70 hover:border-uni-navy/30 text-right transition-all group cursor-pointer shadow-2xs"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-bold text-slate-800 group-hover:text-uni-navy transition-colors truncate">
-                          {role.role}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 font-mono truncate">
-                        {role.email}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Footer Notice */}
