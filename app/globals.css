@@ -45,14 +45,14 @@
   --color-card: var(--card);
 
   /* UNI-PAY brand colors */
-  --color-uni-navy: var(--uni-navy);
-  --color-uni-navy-dark: var(--uni-navy-dark);
-  --color-uni-blue: var(--uni-blue);
-  --color-uni-blue-light: var(--uni-blue-light);
-  --color-uni-teal: var(--uni-teal);
-  --color-uni-slate: var(--uni-slate);
-  --color-uni-surface: var(--uni-surface);
-  --color-uni-bg: var(--uni-bg);
+  --color-uni-navy: #1e3a6e;
+  --color-uni-navy-dark: #0b1528;
+  --color-uni-blue: #2563eb;
+  --color-uni-blue-light: #3b82f6;
+  --color-uni-teal: #0d9488;
+  --color-uni-slate: #64748b;
+  --color-uni-surface: #ffffff;
+  --color-uni-bg: #f8fafc;
 
   /* Radius */
   --radius-sm: calc(var(--radius) * 0.6);
@@ -103,7 +103,7 @@
 
   /* ── UNI-PAY Brand ── */
   --uni-navy: #1e3a6e;
-  --uni-navy-dark: #152b52;
+  --uni-navy-dark: #0b1528;
   --uni-blue: #2563eb;
   --uni-blue-light: #3b82f6;
   --uni-teal: #0d9488;
@@ -162,6 +162,7 @@
     direction: rtl;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -192,27 +193,25 @@
   .bg-uni-surface { background-color: var(--uni-surface); }
   .bg-uni-bg { background-color: var(--uni-bg); }
 
-  /* Gradient hero */
+  /* Gradient hero - unified, never transparent */
   .gradient-hero {
-    background: linear-gradient(
-      135deg,
-      var(--uni-navy-dark) 0%,
-      var(--uni-navy) 40%,
-      #1e4080 70%,
-      #1a3a6e 100%
-    );
+    background-color: #0b1528;
+    background-image:
+      radial-gradient(ellipse 90% 60% at 50% -10%, rgba(37, 99, 235, 0.28), transparent 75%),
+      radial-gradient(circle at 85% 25%, rgba(13, 148, 136, 0.20), transparent 50%),
+      radial-gradient(circle at 10% 70%, rgba(30, 58, 110, 0.35), transparent 55%),
+      linear-gradient(145deg, #070e1c 0%, #0c1a32 30%, #13284d 65%, #18335f 100%);
   }
 
-  /* Subtle pattern overlay */
+  /* Dot matrix / grid pattern overlay */
   .hero-pattern {
-    background-image: 
-      radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.12) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(13, 148, 136, 0.10) 0%, transparent 40%);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   /* Section spacing */
   .section-padding {
-    @apply py-16 px-4 sm:px-6 lg:px-8;
+    @apply py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8;
   }
 
   .container-uni {
@@ -221,16 +220,16 @@
 
   /* Card shadow */
   .card-shadow {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
   }
 
   .card-shadow-hover {
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .card-shadow-hover:hover {
-    box-shadow: 0 8px 25px -5px rgba(30, 58, 110, 0.12), 0 4px 10px -3px rgba(30, 58, 110, 0.08);
-    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -8px rgba(30, 58, 110, 0.14), 0 4px 12px -2px rgba(30, 58, 110, 0.06);
+    transform: translateY(-3px);
   }
 
   /* Focus ring accessible */

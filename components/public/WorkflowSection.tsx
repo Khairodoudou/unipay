@@ -1,38 +1,79 @@
+import {
+  FileUp,
+  Calculator,
+  SearchCode,
+  UserCheck,
+  BookOpenCheck,
+  ShieldCheck,
+  CreditCard,
+  RotateCcw,
+  ArrowLeft,
+  CheckCircle,
+} from "lucide-react";
+
 const workflowSteps = [
   {
     step: "01",
-    title: "إعداد البيانات",
-    description: "يقوم عون الأجور بإدخال أو استيراد بيانات الموظفين والغيابات والتعويضات.",
+    icon: FileUp,
+    title: "إعداد واستيراد البيانات",
+    actor: "عون الموارد البشرية والأجور",
+    description: "إدخال بيانات الموظفين، الغيابات، المنح، المتغيرات الشهرية والشهادات الطبية في النظام.",
+    tag: "مرحلة التحضير",
+    color: "from-blue-500 to-blue-600 text-blue-600 bg-blue-50 border-blue-200",
   },
   {
     step: "02",
-    title: "حساب الأجور",
-    description: "يتم حساب الراتب الإجمالي والصافي بناءً على قواعد الأجور المعرّفة في المنصة.",
+    icon: Calculator,
+    title: "حساب الأجور والمنح",
+    actor: "المحرك الآلي للنظام",
+    description: "حساب آلي دقيق للرواتب الأساسية، المنح، التعويضات والاقتطاعات القانونية والضريبية وفق القوانين.",
+    tag: "معالجة آلية",
+    color: "from-indigo-500 to-indigo-600 text-indigo-600 bg-indigo-50 border-indigo-200",
   },
   {
     step: "03",
-    title: "التدقيق الذكي",
-    description: "يكتشف النظام تلقائياً الأخطاء والتناقضات والقيم غير الاعتيادية للمراجعة.",
+    icon: SearchCode,
+    title: "التدقيق الذكي للشذوذ",
+    actor: "نظام التدقيق الآلي",
+    description: "فحص فوري لاكتشاف التناقضات، الأخطاء الحسابية، أيام الغياب غير المبررة والازدواجيات قبل الإرسال.",
+    tag: "تدقيق ذكي",
+    color: "from-teal-500 to-teal-600 text-teal-600 bg-teal-50 border-teal-200",
   },
   {
     step: "04",
+    icon: UserCheck,
     title: "المصادقة الإدارية",
-    description: "يراجع رئيس المصلحة ثم مدير الجامعة الملف ويصادقان على صحة البيانات.",
+    actor: "رئيس المصلحة & مدير الجامعة",
+    description: "مراجعة الجداول والتقارير الإجمالية، والمصادقة على صحة القوائم إدارياً وتمريرها للمحاسبة.",
+    tag: "مستوى إداري",
+    color: "from-purple-500 to-purple-600 text-purple-600 bg-purple-50 border-purple-200",
   },
   {
     step: "05",
+    icon: BookOpenCheck,
     title: "المراجعة المحاسبية",
-    description: "يتحقق المحاسب من صحة الكتابات المحاسبية والمبالغ قبل الانتقال للرقابة.",
+    actor: "المحاسب المعتمد",
+    description: "التأكد من صحة الحسابات الإجمالية، المبالغ المستحقة للاقتطاعات، ومطابقة القيود المحاسبية.",
+    tag: "مستوى محاسبي",
+    color: "from-sky-500 to-sky-600 text-sky-600 bg-sky-50 border-sky-200",
   },
   {
     step: "06",
-    title: "الرقابة المالية",
-    description: "يُجري المراقب المالي عملية المراقبة النهائية ويُصادق بالتأشير على الملف.",
+    icon: ShieldCheck,
+    title: "تأشيرة الرقابة المالية",
+    actor: "المراقب المالي المعتمد",
+    description: "المراقبة القبلية القانونية على النفقات والتأشير النهائي على قوائم الرواتب قبل الإذن بالدفع.",
+    tag: "رقابة مالية قبلية",
+    color: "from-amber-500 to-amber-600 text-amber-600 bg-amber-50 border-amber-200",
   },
   {
     step: "07",
-    title: "المتابعة والدفع",
-    description: "يتم متابعة الدفع والتحقق منه، ثم تُتاح كشوف الأجور للموظفين.",
+    icon: CreditCard,
+    title: "التنفيذ وإتاحة الكشوف",
+    actor: "مصالح الدفع & الموظف",
+    description: "تنفيذ أوامر التحويل البنكي والبريدي، وإتاحة كشوف الأجور الرقمية المعتمدة لجميع الموظفين.",
+    tag: "صرف وتوزيع",
+    color: "from-emerald-500 to-emerald-600 text-emerald-600 bg-emerald-50 border-emerald-200",
   },
 ];
 
@@ -40,151 +81,108 @@ export default function WorkflowSection() {
   return (
     <section
       id="workflow"
-      className="bg-white section-padding"
+      className="bg-white py-20 lg:py-28 relative overflow-hidden"
       aria-label="كيف تعمل UNI-PAY"
     >
-      <div className="container-uni">
+      <div className="container-uni px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <span className="inline-block px-3 py-1 rounded-full bg-teal-50 text-uni-teal text-xs font-semibold border border-teal-100 mb-4">
-            سير العمل
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 text-teal-800 text-xs font-bold border border-teal-200/70 mb-4">
+            <RotateCcw className="w-3.5 h-3.5" />
+            مسار العمل المتكامل
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-uni-navy mb-4">
-            كيف تعمل UNI-PAY؟
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight">
+            دورة معالجة الأجور خطوة بخطوة
           </h2>
-          <p className="text-slate-500 text-base max-w-2xl mx-auto leading-relaxed">
-            دورة معالجة الأجور منظّمة في مراحل واضحة وخاضعة للرقابة في كل خطوة،
-            مع إمكانية التصحيح والإعادة عند الضرورة.
+          <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
+            مسار عمل صارم من 7 مراحل متتابعة يضمن سلامة البيانات، الامتثال للقوانين، والفصل التام بين الصلاحيات مع إمكانية الرد والتصحيح.
           </p>
         </div>
 
-        {/* Desktop: horizontal stepper */}
-        <div className="hidden lg:block">
-          <div className="relative">
-            {/* Connector line */}
-            <div
-              className="absolute top-6 right-[calc(3.5rem/2)] left-[calc(3.5rem/2)] h-0.5 bg-border"
-              aria-hidden="true"
-            />
-
-            <div className="grid grid-cols-7 gap-2">
-              {workflowSteps.map((step, index) => (
-                <div key={step.step} className="flex flex-col items-center text-center gap-3">
-                  {/* Step circle */}
-                  <div
-                    className={`relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors ${
-                      index < 3
-                        ? "bg-uni-navy border-uni-navy text-white"
-                        : "bg-white border-border text-slate-400"
-                    }`}
-                  >
-                    {index < 3 ? (
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2.5}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    ) : (
-                      <span>{step.step}</span>
-                    )}
+        {/* Steps Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {workflowSteps.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={step.step}
+                className="relative bg-slate-50/70 hover:bg-white rounded-2xl p-6 border border-slate-200/80 hover:border-uni-navy/40 card-shadow card-shadow-hover flex flex-col justify-between"
+              >
+                <div>
+                  {/* Step Top Bar */}
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-2.5 py-1 rounded-md text-[11px] font-bold border bg-white text-slate-700 border-slate-200 shadow-2xs">
+                      {step.tag}
+                    </span>
+                    <span className="text-lg font-mono font-extrabold text-slate-400">
+                      {step.step}
+                    </span>
                   </div>
-                  {/* Content */}
-                  <div>
-                    <p className="text-xs font-semibold text-uni-navy leading-tight">
-                      {step.title}
-                    </p>
-                    <p className="text-[11px] text-slate-400 leading-relaxed mt-1">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        {/* Mobile / Tablet: vertical list */}
-        <div className="lg:hidden flex flex-col gap-0">
-          {workflowSteps.map((step, index) => (
-            <div key={step.step} className="flex gap-4">
-              {/* Left: step + connector */}
-              <div className="flex flex-col items-center">
-                <div
-                  className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold ${
-                    index < 3
-                      ? "bg-uni-navy border-uni-navy text-white"
-                      : "bg-white border-border text-slate-400"
-                  }`}
-                >
-                  {index < 3 ? (
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      aria-hidden="true"
+                  {/* Icon & Title */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center border ${step.color}`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                      {step.title}
+                    </h3>
+                  </div>
+
+                  {/* Actor Badge */}
+                  <div className="mb-3 text-[11px] font-semibold text-uni-navy bg-blue-50/80 px-2.5 py-1 rounded-md border border-blue-100 inline-block">
+                    👤 {step.actor}
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+
+                {/* Step Footer with sequence cue */}
+                <div className="mt-5 pt-3 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-400">
+                  <span>المرحلة {index + 1} من 7</span>
+                  {index < workflowSteps.length - 1 ? (
+                    <span className="text-uni-navy font-medium flex items-center gap-1">
+                      <span>التالي</span>
+                      <ArrowLeft className="h-3 w-3 icon-rtl" />
+                    </span>
                   ) : (
-                    <span className="text-xs">{step.step}</span>
+                    <span className="text-emerald-600 font-bold flex items-center gap-1">
+                      <CheckCircle className="h-3 w-3" />
+                      <span>النهاية</span>
+                    </span>
                   )}
                 </div>
-                {index < workflowSteps.length - 1 && (
-                  <div
-                    className={`flex-1 w-0.5 my-1 min-h-[2rem] ${
-                      index < 2 ? "bg-uni-navy" : "bg-border"
-                    }`}
-                    aria-hidden="true"
-                  />
-                )}
+              </div>
+            );
+          })}
+
+          {/* Rejection / Correction Cycle Card (Feature 8 in the grid) */}
+          <div className="relative bg-gradient-to-br from-amber-50 to-orange-50/80 rounded-2xl p-6 border border-amber-200/90 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                  مرونة الحوكمة
+                </span>
+                <RotateCcw className="h-5 w-5 text-amber-600" />
               </div>
 
-              {/* Content */}
-              <div className="pb-6 flex-1">
-                <h3 className="text-sm font-semibold text-uni-navy mb-1">
-                  {step.title}
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
+              <h3 className="text-base font-bold text-amber-950 mb-2">
+                إمكانية الرد والتصحيح (Rejet & Correction)
+              </h3>
+              
+              <p className="text-xs text-amber-900/80 leading-relaxed mb-4">
+                يحق لأي مسؤول في مراحل المصادقة الإدارية أو المحاسبية أو الرقابة المالية إعادة الملف إلى عون الأجور مع تدوين أسباب وملاحظات الرفض بدقة، لتصحيحه وإعادة إرساله دون فقدان السجل التاريخي.
+              </p>
             </div>
-          ))}
-        </div>
 
-        {/* Note */}
-        <div className="mt-10 flex justify-center">
-          <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-amber-50 border border-amber-100 text-amber-700 text-sm">
-            <svg
-              className="h-4 w-4 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            يمكن إعادة الملف في أي مرحلة لتصحيحه مع تسجيل كامل للسبب والإصدار.
+            <div className="pt-3 border-t border-amber-200/70 text-[11px] text-amber-800 font-semibold flex items-center gap-1.5">
+              <span>✓ ضمان عدم مرور أي خطأ مالي أو إداري</span>
+            </div>
           </div>
         </div>
       </div>
