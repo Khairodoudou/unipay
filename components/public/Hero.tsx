@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, ArrowDown, ShieldCheck, Cpu, CheckCircle2, Clock, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { ChevronLeft, ArrowDown, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
 
 export default function Hero() {
   return (
@@ -22,14 +23,14 @@ export default function Hero() {
         className="absolute inset-0 pointer-events-none overflow-hidden"
         aria-hidden="true"
       >
-        <div className="absolute top-1/4 -right-20 w-[550px] h-[550px] rounded-full bg-blue-500/15 blur-[120px]" />
-        <div className="absolute bottom-10 -left-20 w-[500px] h-[500px] rounded-full bg-teal-400/15 blur-[120px]" />
+        <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] rounded-full bg-blue-500/15 blur-[130px]" />
+        <div className="absolute bottom-10 -left-20 w-[550px] h-[550px] rounded-full bg-teal-400/15 blur-[130px]" />
       </div>
 
       <div className="container-uni relative z-10 w-full px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center min-h-[75vh]">
-          {/* Text content — 7 cols on lg */}
-          <div className="lg:col-span-7 flex flex-col gap-6 text-white text-right">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center min-h-[75vh]">
+          {/* Text content — 6 cols on lg */}
+          <div className="lg:col-span-6 flex flex-col gap-6 text-white text-right">
             {/* Institutional Badge */}
             <div className="animate-fade-in-up">
               <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-medium text-white/90 backdrop-blur-md shadow-sm">
@@ -95,9 +96,9 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Visual card — 5 cols on lg */}
-          <div className="lg:col-span-5 flex justify-center items-center animate-fade-in animate-delay-200">
-            <WorkflowVisual />
+          {/* Real Professional Dashboard Showcase — 6 cols on lg */}
+          <div className="lg:col-span-6 flex justify-center items-center animate-fade-in animate-delay-200">
+            <DashboardShowcase />
           </div>
         </div>
 
@@ -122,173 +123,49 @@ export default function Hero() {
   );
 }
 
-function WorkflowVisual() {
-  const steps = [
-    {
-      id: "01",
-      label: "إعداد واستيراد البيانات",
-      status: "done",
-      actor: "عون الأجور",
-    },
-    {
-      id: "02",
-      label: "حساب الرواتب والمنح",
-      status: "done",
-      actor: "النظام الآلي",
-    },
-    {
-      id: "03",
-      label: "التدقيق الذكي للشذوذ",
-      status: "active",
-      actor: "محرك القواعد الذكي",
-    },
-    {
-      id: "04",
-      label: "المصادقة الإدارية",
-      status: "pending",
-      actor: "رئيس المصلحة / المدير",
-    },
-    {
-      id: "05",
-      label: "المراجعة المحاسبية",
-      status: "pending",
-      actor: "المحاسب المعتمد",
-    },
-    {
-      id: "06",
-      label: "تأشيرة الرقابة المالية",
-      status: "pending",
-      actor: "المراقب المالي",
-    },
-  ];
-
+function DashboardShowcase() {
   return (
-    <div className="relative w-full max-w-md">
-      {/* Floating Status Pill */}
-      <div className="absolute -top-3.5 start-6 z-20 inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg border border-teal-300/30">
+    <div className="relative w-full max-w-lg group">
+      {/* Floating Status Badge Top */}
+      <div className="absolute -top-3.5 start-4 z-20 inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-xl border border-teal-300/30">
         <Sparkles className="h-3.5 w-3.5 text-teal-100" aria-hidden="true" />
-        <span>التدقيق الذكي نشط — 0 تناقضات حرجة</span>
+        <span>لوحة التحكم الحقيقية — معتمدة ومطابقة</span>
       </div>
 
-      {/* Main card */}
-      <div className="rounded-2xl bg-[#0f1f3d]/90 border border-white/15 backdrop-blur-xl p-5 sm:p-6 shadow-2xl ring-1 ring-white/10">
-        {/* Card header */}
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/10">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              <p className="text-white font-bold text-sm">
-                دورة أجور شهر سبتمبر 2026
-              </p>
-            </div>
-            <p className="text-slate-400 text-xs mt-0.5">
-              جامعة الجزائر 1 — كلية العلوم
-            </p>
+      {/* Main Image Frame */}
+      <div className="relative rounded-2xl p-2 bg-gradient-to-b from-white/20 via-white/10 to-white/5 border border-white/20 shadow-2xl backdrop-blur-xl ring-1 ring-white/10">
+        {/* Browser / Monitor window header */}
+        <div className="flex items-center justify-between px-3 py-2 bg-[#0c1a32]/90 rounded-t-xl border-b border-white/10 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
+            <span className="text-[11px] text-slate-300 font-mono ms-2">
+              unipay.univ-alger.dz
+            </span>
           </div>
-          <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-semibold border border-sky-400/30">
-            المرحلة 3 من 6
+          <span className="inline-flex items-center gap-1.5 text-[11px] text-teal-300 font-semibold">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse" />
+            <span>جامعة الجزائر 1</span>
           </span>
         </div>
 
-        {/* Progress bar */}
-        <div className="mb-4 bg-white/5 p-3 rounded-xl border border-white/5">
-          <div className="flex justify-between items-center text-xs mb-2">
-            <span className="text-slate-300 font-medium">التقدم الإجمالي</span>
-            <span className="text-teal-300 font-bold">%55</span>
-          </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-teal-400 to-sky-400 rounded-full transition-all duration-500"
-              style={{ width: "55%" }}
-              role="progressbar"
-              aria-valuenow={55}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            />
-          </div>
-          <div className="flex justify-between text-[11px] text-slate-400 mt-2">
-            <span>342 ملف موظف</span>
-            <span className="text-emerald-400 font-medium">جاهز للمصادقة</span>
-          </div>
+        {/* Dashboard Image */}
+        <div className="relative overflow-hidden rounded-b-xl bg-slate-950">
+          <Image
+            src="/images/dashboard-preview.jpg"
+            alt="واجهة لوحة القيادة الحقيقية لمنصة UNI-PAY لتسيير أجور موظفي الجامعة"
+            width={1024}
+            height={768}
+            priority
+            className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+          />
         </div>
 
-        {/* Workflow steps */}
-        <div className="flex flex-col gap-2">
-          {steps.map((step) => {
-            const isDone = step.status === "done";
-            const isActive = step.status === "active";
-
-            return (
-              <div
-                key={step.id}
-                className={`flex items-center justify-between p-2.5 rounded-lg transition-all ${
-                  isActive
-                    ? "bg-sky-500/20 border border-sky-400/40 text-white shadow-inner"
-                    : isDone
-                    ? "bg-teal-500/10 border border-teal-500/20 text-slate-200"
-                    : "bg-white/[0.02] border border-white/5 text-slate-400 opacity-60"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${
-                      isDone
-                        ? "bg-teal-500 text-white"
-                        : isActive
-                        ? "bg-sky-500 text-white"
-                        : "bg-white/10 text-slate-400"
-                    }`}
-                  >
-                    {isDone ? (
-                      <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-                    ) : isActive ? (
-                      <Clock className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-                    ) : (
-                      <span className="text-[10px]">{step.id}</span>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold leading-tight">
-                      {step.label}
-                    </p>
-                    <p className="text-[10px] text-slate-400 leading-tight">
-                      {step.actor}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  {isActive && (
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-sky-400/30 text-sky-200">
-                      <span className="h-1.5 w-1.5 rounded-full bg-sky-300 animate-ping" />
-                      قيد التنفيذ
-                    </span>
-                  )}
-                  {isDone && (
-                    <span className="text-[10px] text-teal-400 font-medium">
-                      مكتمل
-                    </span>
-                  )}
-                  {step.status === "pending" && (
-                    <span className="text-[10px] text-slate-500">
-                      في الانتظار
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Footer */}
-        <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-            <span>نظام رقابة مشدد</span>
-          </span>
-          <span className="text-slate-400 text-[11px]">
-            آخر تحديث: منذ 3 دقائق
-          </span>
+        {/* Floating Bottom Pill */}
+        <div className="absolute -bottom-3 end-4 z-20 inline-flex items-center gap-2 bg-[#0b1528]/95 backdrop-blur-md text-white text-xs font-semibold px-3.5 py-1.5 rounded-full shadow-xl border border-white/20">
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+          <span>342 موظف وأستاذ · 42.85M د.ج</span>
         </div>
       </div>
     </div>
