@@ -141,12 +141,12 @@ function DashboardShowcase() {
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
             <span className="text-[11px] text-slate-300 font-mono ms-2">
-              unipay.univ-alger.dz
+              UNI-PAY Platform
             </span>
           </div>
           <span className="inline-flex items-center gap-1.5 text-[11px] text-teal-300 font-semibold">
             <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse" />
-            <span>جامعة الجزائر 1</span>
+            <span>المنصة الرقمية الموحدة</span>
           </span>
         </div>
 
@@ -154,7 +154,7 @@ function DashboardShowcase() {
         <div className="relative overflow-hidden rounded-b-xl bg-slate-950">
           <Image
             src="/images/dashboard-preview.jpg"
-            alt="واجهة لوحة القيادة الحقيقية لمنصة UNI-PAY لتسيير أجور موظفي الجامعة"
+            alt="واجهة لوحة القيادة لمنصة UNI-PAY لتسيير أجور موظفي الجامعة"
             width={1024}
             height={768}
             priority
@@ -165,7 +165,7 @@ function DashboardShowcase() {
         {/* Floating Bottom Pill */}
         <div className="absolute -bottom-3 end-4 z-20 inline-flex items-center gap-2 bg-[#0b1528]/95 backdrop-blur-md text-white text-xs font-semibold px-3.5 py-1.5 rounded-full shadow-xl border border-white/20">
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-          <span>342 موظف وأستاذ · 42.85M د.ج</span>
+          <span>342 موظف وأستاذ · تدقيق آلي معتمد</span>
         </div>
       </div>
     </div>

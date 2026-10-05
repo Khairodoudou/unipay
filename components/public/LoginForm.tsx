@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
 
 // Demo roles for preview & UI testing
 const demoRoles = [
-  { label: "عون الأجور", email: "paie@univ-alger.dz", role: "RH / Paie" },
-  { label: "رئيس المصلحة", email: "chef.service@univ-alger.dz", role: "Chef" },
-  { label: "مدير الجامعة", email: "directeur@univ-alger.dz", role: "Directeur" },
-  { label: "المراقب المالي", email: "cf@univ-alger.dz", role: "Contrôleur" },
-  { label: "الموظف", email: "employe@univ-alger.dz", role: "Employé" },
+  { label: "عون الأجور", email: "paie@universite.dz", role: "RH / Paie" },
+  { label: "رئيس المصلحة", email: "chef.service@universite.dz", role: "Chef" },
+  { label: "مدير الجامعة", email: "directeur@universite.dz", role: "Directeur" },
+  { label: "المراقب المالي", email: "cf@universite.dz", role: "Contrôleur" },
+  { label: "الموظف", email: "employe@universite.dz", role: "Employé" },
 ];
 
 export default function LoginForm() {
@@ -24,7 +24,7 @@ export default function LoginForm() {
 
   const emailError =
     email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-      ? "الرجاء إدخال بريد إلكتروني صالح (مثال: nom@univ-alger.dz)"
+      ? "الرجاء إدخال بريد إلكتروني صالح (مثال: nom@universite.dz)"
       : null;
 
   const passwordError =
@@ -125,7 +125,7 @@ export default function LoginForm() {
                 disabled={isPending}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="prenom.nom@univ-alger.dz"
+                placeholder="prenom.nom@universite.dz"
                 aria-describedby={emailError ? "email-error" : undefined}
                 aria-invalid={emailError ? "true" : undefined}
                 className={cn(
