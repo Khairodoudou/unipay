@@ -1,0 +1,189 @@
+// UNI-PAY Prisma Schema
+// Conçu pour SQLite en local/MVP, 100% portable vers PostgreSQL pour la production
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  address     String?
+  wilaya      String?
+  phone       String?
+  email       String?
+  website     String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+  units OrganizationUnit[]
+
+  @@map("organizations")
+}
+
+model OrganizationUnit {
+  id             String             @id @default(cuid())
+  name           String
+  code           String             @unique
+  type           String // PRESIDENCY, FACULTY, DIRECTION, SERVICE, DEPARTMENT, SECRETARIAT_GENERAL, OTHER
+  parentId       String?
+  parent         OrganizationUnit?  @relation("UnitHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children       OrganizationUnit[] @relation("UnitHierarchy")
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isActive       Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([organizationId])
+  @@index([parentId])
+  @@map("organization_units")
+}
+
+model SystemSetting {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  value         String
+  category      String // GENERAL, SECURITY, INTERFACE, SYSTEM
+  labelAr       String
+  descriptionAr String?
+  isPublic      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category])
+  @@map("system_settings")
+}
+
+model PayrollRule {
+  id            String   @id @default(cuid())
+  code          String   @unique // Identifiant technique de la règle (ex: CNAS_SALARIAL, IEP_ECHELON)
+  nameAr        String
+  descriptionAr String?
+  category      String // TAX, SOCIAL_CONTRIBUTION, ALLOWANCE, BONUS, BASE_INDEX
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  versions PayrollRuleVersion[]
+
+  @@index([category])
+  @@map("payroll_rules")
+}
+
+model PayrollRuleVersion {
+  id            String      @id @default(cuid())
+  ruleId        String
+  rule          PayrollRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  value         String // Valeur ou paramètres (ex: "0.09" pour 9%, ou barème JSON)
+  unit          String // PERCENTAGE, FIXED_AMOUNT, INDEX_POINTS, COEFFICIENT, FORMULA
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  notes         String?
+  createdBy     String?
+  createdAt     DateTime    @default(now())
+
+  @@unique([ruleId, versionNumber])
+  @@index([ruleId])
+  @@index([effectiveFrom])
+  @@map("payroll_rule_versions")
+}
+
+model Role {
+  id            String   @id @default(cuid())
+  code          String   @unique // ADMIN, AGENT_RH, CHEF_SERVICE, DIRECTEUR, COMPTABLE, CONTROLEUR_FINANCIER, EMPLOYE
+  nameAr        String
+  descriptionAr String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users           User[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id        String   @id @default(cuid())
+  code      String   @unique // users.read, payroll.prepare, etc.
+  nameAr    String
+  category  String
+  createdAt DateTime @default(now())
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  passwordHash   String
+  firstName      String
+  lastName       String
+  roleId         String
+  role           Role         @relation(fields: [roleId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  isActive       Boolean      @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  sessions  Session[]
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("sessions")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action       String // LOGIN_SUCCESS, LOGIN_FAILED, LOGOUT, SESSION_REVOKED
+  resourceType String?
+  resourceId   String?
+  details      String? // JSON metadata / descriptions
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

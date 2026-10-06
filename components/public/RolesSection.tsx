@@ -1,4 +1,4 @@
-import { Users, User, ShieldCheck, CheckCircle } from "lucide-react";
+import { Users, CheckCircle } from "lucide-react";
 
 const roles = [
   {

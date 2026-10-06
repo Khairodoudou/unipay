@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Layers,
   Shield,
-  CheckCircle2,
   FileKey,
 } from "lucide-react";
 

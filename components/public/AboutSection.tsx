@@ -1,4 +1,4 @@
-import { CheckCircle2, ShieldCheck, Cpu, GitPullRequest, ArrowRight, Layers } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Cpu, Layers } from "lucide-react";
 
 export default function AboutSection() {
   const highlights = [

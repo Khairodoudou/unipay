@@ -6,8 +6,6 @@ import {
   Building2,
   FileCheck2,
   Cpu,
-  ArrowUpRight,
-  Sparkles,
 } from "lucide-react";
 
 export default function Footer() {

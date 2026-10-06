@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronLeft, ArrowDown, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ArrowDown, Sparkles, CheckCircle2 } from "lucide-react";
 
 export default function Hero() {
   return (

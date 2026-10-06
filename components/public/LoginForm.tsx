@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Mail,
   Lock,
@@ -15,14 +16,18 @@ import {
   Loader2,
   KeyRound,
   Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { loginAction } from "@/lib/auth/actions";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -33,23 +38,35 @@ export default function LoginForm() {
       : null;
 
   const passwordError =
-    password.length > 0 && password.length < 6
-      ? "كلمة المرور يجب أن تتكون من 6 أحرف على الأقل"
+    password.length > 0 && password.length < 8
+      ? "كلمة المرور يجب أن تتكون من 8 أحرف على الأقل"
       : null;
 
-  const isFormValid = email.length > 0 && password.length >= 6 && !emailError;
+  const isFormValid = email.length > 0 && password.length >= 8 && !emailError;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!isFormValid) return;
 
+    setErrorMessage(null);
     setInfoMessage(null);
+
     startTransition(async () => {
-      // Phase 1 preview: simulate validation check
-      await new Promise((r) => setTimeout(r, 900));
-      setInfoMessage(
-        "تم التحقق بنجاح! نظام المصادقة وقواعد البيانات سيتم ربطهما في المرحلة 2 (Phase 2)."
-      );
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
+      if (rememberMe) {
+        formData.append("rememberMe", "true");
+      }
+
+      const result = await loginAction(formData);
+
+      if (!result.success) {
+        setErrorMessage(result.error || "بيانات الاعتماد غير صحيحة.");
+      } else if (result.redirectTo) {
+        setInfoMessage("تم التحقق بنجاح! جاري تحويلك إلى مساحة العمل الخاصة بك...");
+        router.push(result.redirectTo);
+      }
     });
   }
 
@@ -191,6 +208,20 @@ export default function LoginForm() {
               </div>
 
               {/* Status / Alert Message */}
+              {errorMessage && (
+                <div
+                  role="alert"
+                  aria-live="polite"
+                  className="mb-6 flex gap-3 items-start p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-xs sm:text-sm leading-relaxed animate-fade-in"
+                >
+                  <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold mb-0.5">خطأ في تسجيل الدخول:</p>
+                    <p>{errorMessage}</p>
+                  </div>
+                </div>
+              )}
+
               {infoMessage && (
                 <div
                   role="alert"
@@ -382,6 +413,99 @@ export default function LoginForm() {
                   </div>
                 </div>
               )}
+
+              {/* Phase 2 Quick Test Accounts Helper */}
+              <div className="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-teal-600" />
+                    <span>حسابات الاختبار السريع (المرحلة 2 - RBAC):</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400">انقر لملء البيانات</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("admin@unipay.dz");
+                      setPassword("AdminPassword2026!");
+                    }}
+                    className="p-2 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-uni-navy hover:text-uni-navy hover:bg-blue-50/50 transition-all text-center cursor-pointer"
+                  >
+                    مدير النظام
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("agent@unipay.dz");
+                      setPassword("DemoPassword2026!");
+                    }}
+                    className="p-2 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-uni-navy hover:text-uni-navy hover:bg-blue-50/50 transition-all text-center cursor-pointer"
+                  >
+                    عون الأجور
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("chef@unipay.dz");
+                      setPassword("DemoPassword2026!");
+                    }}
+                    className="p-2 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-uni-navy hover:text-uni-navy hover:bg-blue-50/50 transition-all text-center cursor-pointer"
+                  >
+                    رئيس المصلحة
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("directeur@unipay.dz");
+                      setPassword("DemoPassword2026!");
+                    }}
+                    className="p-2 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-uni-navy hover:text-uni-navy hover:bg-blue-50/50 transition-all text-center cursor-pointer"
+                  >
+                    مدير الجامعة
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("comptable@unipay.dz");
+                      setPassword("DemoPassword2026!");
+                    }}
+                    className="p-2 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-uni-navy hover:text-uni-navy hover:bg-blue-50/50 transition-all text-center cursor-pointer"
+                  >
+                    المحاسب المالي
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("controleur@unipay.dz");
+                      setPassword("DemoPassword2026!");
+                    }}
+                    className="p-2 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-uni-navy hover:text-uni-navy hover:bg-blue-50/50 transition-all text-center cursor-pointer"
+                  >
+                    المراقب المالي
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("employe@unipay.dz");
+                      setPassword("DemoPassword2026!");
+                    }}
+                    className="p-2 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-uni-navy hover:text-uni-navy hover:bg-blue-50/50 transition-all text-center cursor-pointer"
+                  >
+                    الموظف
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("desactive@unipay.dz");
+                      setPassword("DemoPassword2026!");
+                    }}
+                    className="p-2 rounded-lg bg-red-50/80 border border-red-200 text-[11px] font-semibold text-red-700 hover:bg-red-100 transition-all text-center cursor-pointer"
+                  >
+                    حساب معطل
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Footer Notice */}

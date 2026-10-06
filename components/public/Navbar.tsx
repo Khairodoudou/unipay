@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, ChevronLeft, Shield } from "lucide-react";
+import { Menu, X, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
