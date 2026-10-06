@@ -1,4 +1,4 @@
-// UNI-PAY Prisma Schema
+// UNI-PAY Prisma Schema — Phase 4
 // Conçu pour SQLite en local/MVP, 100% portable vers PostgreSQL pour la production
 
 generator client {
@@ -8,6 +8,212 @@ generator client {
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+// ── Phase 4 : Employee Management ──────────────────────────────────────────────
+
+model Employee {
+  id               String    @id @default(cuid())
+  matricule        String    @unique
+  firstName        String
+  lastName         String
+  dateOfBirth      DateTime?
+  gender           String?   // M, F
+  nationalId       String?   // CIN
+  status           String    @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  // Informations administratives
+  grade            String?   // Grade fonctionnel (ex: MC-A, B, Administrateur)
+  position         String?   // Poste/Fonction
+  category         String?   // Permanent, Contractuel, Vacataire
+  recruitmentDate  DateTime?
+  // Informations salariales
+  baseSalary       Decimal   @default(0) // Salaire de base en DZD
+  index            Int?      // Indice de traitement
+  // Informations bancaires
+  rib              String?   // Relevé d'Identité Bancaire
+  bankName         String?   // Nom de la banque
+  // Contacts
+  phone            String?
+  email            String?
+  address          String?
+  // Relations
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  organizationUnitId String?
+  organizationUnit   OrganizationUnit? @relation(fields: [organizationUnitId], references: [id])
+  createdBy        String?   // userId de l'agent
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  history          EmployeeHistory[]
+  payrollRecords   PayrollRecord[]
+  batchEntries     BatchEmployee[]
+  attendanceRecords AttendanceRecord[]
+  lineItems        PayrollLineItem[]
+
+  @@index([organizationId])
+  @@index([organizationUnitId])
+  @@index([status])
+  @@index([grade])
+  @@map("employees")
+}
+
+model EmployeeHistory {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  field       String   // Le champ modifié (ex: "baseSalary", "grade", "status")
+  oldValue    String?
+  newValue    String
+  changedBy   String   // userId
+  reason      String?  // Motif de la modification
+  createdAt   DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([field])
+  @@map("employee_history")
+}
+
+// ── Phase 4 : Payroll Period ────────────────────────────────────────────────────
+
+model PayrollPeriod {
+  id          String   @id @default(cuid())
+  year        Int
+  month       Int      // 1-12
+  label       String   // "Octobre 2026"
+  status      String   @default("DRAFT") // DRAFT, OPEN, PROCESSING, CLOSED
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  batches PayrollBatch[]
+
+  @@unique([year, month])
+  @@index([status])
+  @@map("payroll_periods")
+}
+
+// ── Phase 4 : Payroll Batch ────────────────────────────────────────────────────
+
+model PayrollBatch {
+  id           String        @id @default(cuid())
+  periodId     String
+  period       PayrollPeriod @relation(fields: [periodId], references: [id])
+  versionNumber Int          @default(1) // v1, v2 si correction
+  label        String?       // Libellé optionnel
+  status       String        @default("DRAFT") // DRAFT, CALCULATING, CALCULATED, READY_FOR_REVIEW, RETURNED_FOR_CORRECTION
+  notes        String?
+  calculatedAt DateTime?
+  createdBy    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  employees    BatchEmployee[]
+  records      PayrollRecord[]
+  attendanceRecords AttendanceRecord[]
+  lineItems    PayrollLineItem[]
+
+  @@unique([periodId, versionNumber])
+  @@index([periodId])
+  @@index([status])
+  @@map("payroll_batches")
+}
+
+// Association Batch <-> Employee (sans doublon par batch)
+model BatchEmployee {
+  id         String       @id @default(cuid())
+  batchId    String
+  batch      PayrollBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee     @relation(fields: [employeeId], references: [id])
+  addedBy    String?
+  addedAt    DateTime     @default(now())
+
+  @@unique([batchId, employeeId])
+  @@index([batchId])
+  @@index([employeeId])
+  @@map("batch_employees")
+}
+
+// ── Phase 4 : Payroll Record (snapshot figé au moment du calcul) ───────────────
+
+model PayrollRecord {
+  id              String       @id @default(cuid())
+  batchId         String
+  batch           PayrollBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employee        Employee     @relation(fields: [employeeId], references: [id])
+  // Snapshot des données employé au moment du calcul
+  snapshotMatricule String
+  snapshotName    String
+  snapshotGrade   String?
+  snapshotBaseSalary Decimal
+  // Résultats du calcul
+  grossAmount     Decimal      @default(0)   // Salaire brut
+  totalAllowances Decimal      @default(0)   // Total indemnités
+  totalDeductions Decimal      @default(0)   // Total retenues
+  totalContributions Decimal   @default(0)   // Cotisations sociales (CNAS, etc.)
+  totalTaxes      Decimal      @default(0)   // IRG
+  netAmount       Decimal      @default(0)   // Salaire net
+  // Métadonnées de calcul
+  calculationMeta String?      // JSON des règles utilisées (PayrollRule codes + versions)
+  status          String       @default("CALCULATED") // CALCULATED, ERROR
+  errorMessage    String?
+  calculatedAt    DateTime     @default(now())
+
+  @@unique([batchId, employeeId])
+  @@index([batchId])
+  @@index([employeeId])
+  @@map("payroll_records")
+}
+
+// ── Phase 4 : Attendance (Présences / Absences) ────────────────────────────────
+
+model AttendanceRecord {
+  id             String       @id @default(cuid())
+  batchId        String
+  batch          PayrollBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  employeeId     String
+  employee       Employee     @relation(fields: [employeeId], references: [id])
+  workingDays    Int          @default(30) // Jours de travail du mois
+  presentDays    Decimal      @default(30) // Jours effectivement présents
+  absentDays     Decimal      @default(0)  // Jours d'absence non justifiée
+  sickDays       Decimal      @default(0)  // Congé maladie
+  vacationDays   Decimal      @default(0)  // Congé annuel
+  lateMinutes    Int          @default(0)  // Retards en minutes
+  notes          String?
+  createdBy      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([batchId, employeeId])
+  @@index([batchId])
+  @@index([employeeId])
+  @@map("attendance_records")
+}
+
+// ── Phase 4 : PayrollLineItem (Indemnités & Retenues) ─────────────────────────
+
+model PayrollLineItem {
+  id          String       @id @default(cuid())
+  batchId     String
+  batch       PayrollBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  employeeId  String
+  employee    Employee     @relation(fields: [employeeId], references: [id])
+  type        String       // ALLOWANCE, BONUS, DEDUCTION, CONTRIBUTION, TAX
+  code        String?      // Référence à une PayrollRule (optionnel)
+  labelAr     String       // Libellé en arabe
+  amount      Decimal      // Montant en DZD (positif)
+  isManual    Boolean      @default(true) // true = saisi manuellement, false = calculé par le moteur
+  sourceRule  String?      // Code PayrollRule si calculé
+  notes       String?
+  createdBy   String?
+  createdAt   DateTime     @default(now())
+
+  @@index([batchId])
+  @@index([employeeId])
+  @@index([type])
+  @@map("payroll_line_items")
 }
 
 model Organization {
@@ -24,8 +230,9 @@ model Organization {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  users User[]
-  units OrganizationUnit[]
+  users     User[]
+  units     OrganizationUnit[]
+  employees Employee[]
 
   @@map("organizations")
 }
@@ -43,6 +250,8 @@ model OrganizationUnit {
   isActive       Boolean            @default(true)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
+
+  employees Employee[]
 
   @@index([organizationId])
   @@index([parentId])
