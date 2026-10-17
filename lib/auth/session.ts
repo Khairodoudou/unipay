@@ -21,6 +21,7 @@ export interface UserSessionData {
   organizationName: string;
   isActive: boolean;
   permissions: string[];
+  employeeId?: string | null;
 }
 
 /**
@@ -136,6 +137,7 @@ export async function validateSessionToken(
       organizationName: session.user.organization.name,
       isActive: session.user.isActive,
       permissions,
+      employeeId: session.user.employeeId ?? null,
     },
     expiresAt: session.expiresAt,
   };

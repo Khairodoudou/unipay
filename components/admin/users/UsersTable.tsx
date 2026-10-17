@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Edit,
@@ -11,8 +11,15 @@ import {
   Power,
   Clock,
   Loader2,
+  Trash2,
+  AlertTriangle,
+  X,
+  ShieldAlert,
 } from "lucide-react";
-import { toggleUserStatusAction } from "@/lib/admin/users/actions";
+import {
+  toggleUserStatusAction,
+  deleteUserAction,
+} from "@/lib/admin/users/actions";
 
 interface UserItem {
   id: string;
@@ -35,12 +42,28 @@ interface UserItem {
 
 interface UsersTableProps {
   users: UserItem[];
+  currentUserId?: string;
 }
 
-export function UsersTable({ users }: UsersTableProps) {
+export function UsersTable({ users, currentUserId }: UsersTableProps) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // État de confirmation de suppression
+  const [userToDelete, setUserToDelete] = useState<UserItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+  // Fermer la modale avec la touche Échap
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && userToDelete && !isDeleting) {
+        setUserToDelete(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [userToDelete, isDeleting]);
 
   const handleToggleStatus = async (user: UserItem) => {
     const nextStatus = !user.isActive;
@@ -65,6 +88,26 @@ export function UsersTable({ users }: UsersTableProps) {
       setSuccessMessage(
         nextStatus ? "تم تفعيل الحساب بنجاح." : "تم تعطيل الحساب بنجاح."
       );
+      setTimeout(() => setSuccessMessage(null), 4000);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setIsDeleting(true);
+    setErrorMessage(null);
+
+    const res = await deleteUserAction(userToDelete.id);
+    setIsDeleting(false);
+
+    if (!res.success) {
+      setErrorMessage(res.error || "فشلت عملية حذف المستخدم.");
+      setUserToDelete(null);
+    } else {
+      const deletedName = `${userToDelete.firstName} ${userToDelete.lastName}`;
+      setUserToDelete(null);
+      setSuccessMessage(`تم حذف حساب المستخدم "${deletedName}" بنجاح.`);
       setTimeout(() => setSuccessMessage(null), 4000);
     }
   };
@@ -226,6 +269,30 @@ export function UsersTable({ users }: UsersTableProps) {
                             )}
                           </button>
 
+                          {user.id === currentUserId ? (
+                            <button
+                              type="button"
+                              disabled
+                              className="p-1.5 rounded-lg text-slate-200 cursor-not-allowed"
+                              title="لا يمكن حذف حسابك الشخصي الحالي"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setErrorMessage(null);
+                                setUserToDelete(user);
+                              }}
+                              disabled={isLoading || isDeleting}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                              title="حذف هذا الحساب نهائياً"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+
                           <Link
                             href={`/admin/users/${user.id}`}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
@@ -243,6 +310,126 @@ export function UsersTable({ users }: UsersTableProps) {
           </div>
         )}
       </div>
+
+      {/* ── Modal de confirmation de suppression professionnelle ─────────────── */}
+      {userToDelete && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-dialog-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeleting) {
+              setUserToDelete(null);
+            }
+          }}
+        >
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 text-right space-y-5 animate-scale-in">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-100 text-red-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3
+                    id="delete-dialog-title"
+                    className="text-base sm:text-lg font-black text-slate-900"
+                  >
+                    تأكيد حذف الحساب نهائياً
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    إجراء حساس ومحمي أمنياً
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => !isDeleting && setUserToDelete(null)}
+                disabled={isDeleting}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-50 cursor-pointer"
+                aria-label="إغلاق النافذة"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Warning Message */}
+            <div className="p-3.5 rounded-2xl bg-red-50/80 border border-red-200/80 text-red-900 text-xs leading-relaxed space-y-1">
+              <p className="font-bold flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 text-red-600 shrink-0" />
+                <span>تحذير: هذا الإجراء نهائي ولا يمكن التراجع عنه!</span>
+              </p>
+              <p className="text-red-700 pr-5">
+                سيتم حذف حساب المستخدم من النظام بشكل دائم وإلغاء جميع الجلسات المفتوحة فوراً.
+              </p>
+            </div>
+
+            {/* User Target Card */}
+            <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-2">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                بيانات الحساب المستهدف:
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-100/70 border border-teal-200 text-teal-800 font-black text-sm flex items-center justify-center shrink-0">
+                  {userToDelete.firstName[0]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-slate-900 text-sm truncate">
+                    {userToDelete.firstName} {userToDelete.lastName}
+                  </div>
+                  <div className="text-xs text-slate-500 font-mono truncate">
+                    {userToDelete.email}
+                  </div>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                <span className="text-slate-500">الدور والمؤسسة:</span>
+                <span className="font-semibold text-slate-800">
+                  {userToDelete.role.nameAr} • {userToDelete.organization.name}
+                </span>
+              </div>
+            </div>
+
+            {/* Tip */}
+            <p className="text-[11px] text-slate-500 leading-normal">
+              💡 <span className="font-semibold">ملاحظة:</span> إذا كنت ترغب فقط في إيقاف وصول المستخدم للمنصة دون حذف بياناته، يمكنك إلغاء الأمر واستخدام زر <span className="font-semibold text-amber-700">تعطيل الحساب</span>.
+            </p>
+
+            {/* Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setUserToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                إلغاء الأمر
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDeleteUser}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 shadow-sm hover:shadow transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>جاري الحذف...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>تأكيد الحذف نهائياً</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

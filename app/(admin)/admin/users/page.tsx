@@ -25,7 +25,7 @@ interface UsersPageProps {
 const PAGE_SIZE = 10;
 
 export default async function AdminUsersPage({ searchParams }: UsersPageProps) {
-  await requireRole("ADMIN");
+  const currentUser = await requireRole("ADMIN");
   const params = await searchParams;
 
   const search = params.search?.trim();
@@ -127,7 +127,7 @@ export default async function AdminUsersPage({ searchParams }: UsersPageProps) {
       <UserFilterBar roles={roles} />
 
       {/* Table */}
-      <UsersTable users={formattedUsers} />
+      <UsersTable users={formattedUsers} currentUserId={currentUser.id} />
 
       {/* Pagination */}
       <AdminPagination

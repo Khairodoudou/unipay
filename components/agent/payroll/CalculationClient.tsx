@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Send,
   RotateCw,
+  Sparkles,
 } from "lucide-react";
 import {
   calculateBatchAction,
@@ -244,6 +245,16 @@ export function CalculationClient({
                   </>
                 )}
               </button>
+            )}
+
+            {isCalculated && (
+              <Link
+                href={`/agent/batches/${batchId}/audit`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 hover:bg-teal-100 transition-all cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-teal-600" />
+                <span>التدقيق الذكي (Smart Audit)</span>
+              </Link>
             )}
 
             {isCalculated && !isReadyForReview && (

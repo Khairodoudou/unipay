@@ -23,7 +23,7 @@ interface Employee {
   firstName: string;
   lastName: string;
   status: string;
-  baseSalary: { toString: () => string };
+  baseSalary: number | string | { toString: () => string };
   organizationUnitId: string | null;
   grade: string | null;
   position: string | null;

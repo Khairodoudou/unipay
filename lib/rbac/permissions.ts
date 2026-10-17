@@ -3,7 +3,7 @@ import { RoleCode } from "./roles";
 export interface PermissionDefinition {
   code: string;
   nameAr: string;
-  category: "USERS" | "PAYROLL" | "ACCOUNTING" | "FINANCIAL_CONTROL" | "AUDIT" | "EMPLOYEE" | "SYSTEM";
+  category: "USERS" | "PAYROLL" | "ACCOUNTING" | "FINANCIAL_CONTROL" | "AUDIT" | "EMPLOYEE" | "SYSTEM" | "PAYMENT";
 }
 
 export const INITIAL_PERMISSIONS: PermissionDefinition[] = [
@@ -63,6 +63,16 @@ export const INITIAL_PERMISSIONS: PermissionDefinition[] = [
   // Espace Employé
   { code: "employe.access", nameAr: "الوصول إلى مساحة الموظف الشخصية", category: "EMPLOYEE" },
   { code: "payslips.read", nameAr: "تحميل كشوف الراتب الشهرية", category: "EMPLOYEE" },
+  // Phase 6 — Workflow
+  { code: "batch.submit", nameAr: "إرسال دفعة الأجور للمراجعة", category: "PAYROLL" },
+  { code: "payment.authorize", nameAr: "ترخيص صرف مسيرة الأجور بعد التأشيرة المالية", category: "FINANCIAL_CONTROL" },
+  // Phase 8 — Paiement
+  { code: "payment.read",      nameAr: "الاطلاع على أوامر الدفع وحالة التسوية",       category: "PAYMENT" },
+  { code: "payment.prepare",   nameAr: "تحضير أمر الدفع وتحقق ما قبل التنفيذ",   category: "PAYMENT" },
+  { code: "payment.process",   nameAr: "إطلاق معالجة الدفع وتوليد الملف التقني العام",   category: "PAYMENT" },
+  { code: "payment.confirm",   nameAr: "تأكيد تنفيذ الدفع المتحكّم فيه من طرف المحاسب",   category: "PAYMENT" },
+  { code: "payment.reconcile", nameAr: "مطابقة كشوف التسوية ومراجعة الرجوعات",  category: "PAYMENT" },
+  { code: "payment.close",     nameAr: "إقفال الدفعة بشكل نهائي بعد التسوية الكاملة",        category: "PAYMENT" },
 ];
 
 export const ROLE_DEFAULT_PERMISSIONS: Record<RoleCode, string[]> = {
@@ -95,6 +105,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<RoleCode, string[]> = {
     "employees.update",
     "payroll.prepare",
     "payroll.read",
+    "batch.submit",
   ],
   CHEF_SERVICE: [
     "chef.access",
@@ -106,18 +117,28 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<RoleCode, string[]> = {
     "directeur.access",
     "payroll.read",
     "payroll.approve",
+    "payment.read",
+    "payment.close",
   ],
   COMPTABLE: [
     "comptable.access",
     "payroll.read",
     "accounting.review",
     "accounting.validate",
+    "payment.read",
+    "payment.prepare",
+    "payment.process",
+    "payment.confirm",
+    "payment.reconcile",
+    "payment.close",
   ],
   CONTROLEUR_FINANCIER: [
     "controleur.access",
     "payroll.read",
     "financial_control.review",
     "financial_control.visa",
+    "payment.authorize",
+    "payment.read",
   ],
   EMPLOYE: [
     "employe.access",

@@ -367,6 +367,47 @@ async function main() {
   }
   console.log("✅ 7 Comptes de test créés (6 rôles + 1 compte désactivé).");
 
+  // Liaison du compte employé de démonstration
+  const employeUser = await prisma.user.findUnique({ where: { email: "employe@unipay.dz" } });
+  if (employeUser) {
+    const demoEmp = await prisma.employee.upsert({
+      where: { matricule: "EMP-PROF-001" },
+      update: {
+        email: "employe@unipay.dz",
+        firstName: "يوسف",
+        lastName: "طاهري",
+        position: "أستاذ محاضر أ",
+        grade: "MC-A",
+        category: "Permanent",
+        status: "ACTIVE",
+        baseSalary: 85000,
+        index: 780,
+        rib: "00100234567890123456",
+        bankName: "BNA",
+        organizationId: organization.id,
+      },
+      create: {
+        matricule: "EMP-PROF-001",
+        email: "employe@unipay.dz",
+        firstName: "يوسف",
+        lastName: "طاهري",
+        position: "أستاذ محاضر أ",
+        grade: "MC-A",
+        category: "Permanent",
+        status: "ACTIVE",
+        baseSalary: 85000,
+        index: 780,
+        rib: "00100234567890123456",
+        bankName: "BNA",
+        organizationId: organization.id,
+      },
+    });
+    await prisma.user.update({
+      where: { id: employeUser.id },
+      data: { employeeId: demoEmp.id },
+    });
+  }
+
   // 7. Structure Organisationnelle (Unités)
   const presidence = await prisma.organizationUnit.upsert({
     where: { code: "UO-PRES" },

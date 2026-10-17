@@ -166,6 +166,7 @@ export async function createPayrollBatchAction(
         label: label || `دفعة v${nextVersion} — ${period.label}`,
         notes: notes || null,
         status: "DRAFT",
+        organizationId: caller.organizationId || null,
         createdBy: caller.id,
       },
     });
@@ -196,7 +197,10 @@ export async function addEmployeesToBatchAction(
 
     const batch = await prisma.payrollBatch.findUnique({ where: { id: batchId } });
     if (!batch) return { success: false, error: "الدفعة غير موجودة." };
-    if (!["DRAFT", "RETURNED_FOR_CORRECTION"].includes(batch.status)) {
+    if (batch.status === "RETURNED_FOR_CORRECTION") {
+      return { success: false, error: "الدفعة معادة للتصحيح ومجمدة. يرجى إنشاء نسخة جديدة (Version) للتعديل." };
+    }
+    if (batch.status !== "DRAFT") {
       return { success: false, error: "لا يمكن تعديل الدفعة في حالتها الحالية." };
     }
 
@@ -239,7 +243,10 @@ export async function removeEmployeeFromBatchAction(
 
     const batch = await prisma.payrollBatch.findUnique({ where: { id: batchId } });
     if (!batch) return { success: false, error: "الدفعة غير موجودة." };
-    if (!["DRAFT", "RETURNED_FOR_CORRECTION"].includes(batch.status)) {
+    if (batch.status === "RETURNED_FOR_CORRECTION") {
+      return { success: false, error: "الدفعة معادة للتصحيح ومجمدة. يرجى إنشاء نسخة جديدة (Version) للتعديل." };
+    }
+    if (batch.status !== "DRAFT") {
       return { success: false, error: "لا يمكن تعديل الدفعة في حالتها الحالية." };
     }
 
@@ -278,6 +285,18 @@ export async function saveAttendanceAction(
     }
 
     const d = parsed.data;
+
+    const batch = await prisma.payrollBatch.findUnique({
+      where: { id: d.batchId },
+      select: { status: true },
+    });
+    if (!batch) return { success: false, error: "الدفعة غير موجودة." };
+    if (batch.status === "CLOSED" || batch.status === "PAID") {
+      return { success: false, error: "الدفعة مُقفلة أو مدفوعة ولا يمكن تعديل بيانات الحضور." };
+    }
+    if (batch.status !== "DRAFT") {
+      return { success: false, error: "لا يمكن تعديل بيانات الحضور في حالتها الحالية." };
+    }
 
     await prisma.attendanceRecord.upsert({
       where: { batchId_employeeId: { batchId: d.batchId, employeeId: d.employeeId } },
@@ -342,6 +361,19 @@ export async function addLineItemAction(
     }
 
     const d = parsed.data;
+
+    const batch = await prisma.payrollBatch.findUnique({
+      where: { id: d.batchId },
+      select: { status: true },
+    });
+    if (!batch) return { success: false, error: "الدفعة غير موجودة." };
+    if (batch.status === "CLOSED" || batch.status === "PAID") {
+      return { success: false, error: "الدفعة مُقفلة أو مدفوعة ولا يمكن إضافة بنود إليها." };
+    }
+    if (batch.status !== "DRAFT") {
+      return { success: false, error: "لا يمكن تعديل بنود الدفعة في حالتها الحالية." };
+    }
+
     const item = await prisma.payrollLineItem.create({
       data: {
         batchId: d.batchId,
@@ -374,8 +406,17 @@ export async function addLineItemAction(
 export async function deleteLineItemAction(itemId: string): Promise<ActionResult> {
   try {
     await verifyAgentCaller();
-    const item = await prisma.payrollLineItem.findUnique({ where: { id: itemId } });
+    const item = await prisma.payrollLineItem.findUnique({
+      where: { id: itemId },
+      include: { batch: { select: { status: true } } },
+    });
     if (!item) return { success: false, error: "البند غير موجود." };
+    if (item.batch.status === "CLOSED" || item.batch.status === "PAID") {
+      return { success: false, error: "الدفعة مُقفلة أو مدفوعة ولا يمكن حذف بنود منها." };
+    }
+    if (item.batch.status !== "DRAFT") {
+      return { success: false, error: "لا يمكن تعديل بنود الدفعة في حالتها الحالية." };
+    }
 
     await prisma.payrollLineItem.delete({ where: { id: itemId } });
 

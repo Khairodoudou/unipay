@@ -1,4 +1,4 @@
-// UNI-PAY Prisma Schema — Phase 4
+// UNI-PAY Prisma Schema — Phase 4 + Phase 6 + Phase 8
 // Conçu pour SQLite en local/MVP, 100% portable vers PostgreSQL pour la production
 
 generator client {
@@ -50,6 +50,9 @@ model Employee {
   batchEntries     BatchEmployee[]
   attendanceRecords AttendanceRecord[]
   lineItems        PayrollLineItem[]
+  auditFindings    AuditFinding[]
+  user             User?
+  paymentTransactions PaymentTransaction[]
 
   @@index([organizationId])
   @@index([organizationUnitId])
@@ -96,26 +99,39 @@ model PayrollPeriod {
 // ── Phase 4 : Payroll Batch ────────────────────────────────────────────────────
 
 model PayrollBatch {
-  id           String        @id @default(cuid())
-  periodId     String
-  period       PayrollPeriod @relation(fields: [periodId], references: [id])
-  versionNumber Int          @default(1) // v1, v2 si correction
-  label        String?       // Libellé optionnel
-  status       String        @default("DRAFT") // DRAFT, CALCULATING, CALCULATED, READY_FOR_REVIEW, RETURNED_FOR_CORRECTION
-  notes        String?
-  calculatedAt DateTime?
-  createdBy    String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  periodId       String
+  period         PayrollPeriod @relation(fields: [periodId], references: [id])
+  versionNumber  Int           @default(1) // v1, v2 si correction
+  label          String?       // Libellé optionnel
+  // Statuts complets du workflow — centralisés dans lib/workflow/states.ts
+  // DRAFT | CALCULATING | CALCULATED | AUDITING | READY_FOR_REVIEW
+  // CHEF_REVIEW | APPROVED_BY_CHEF | DIRECTOR_REVIEW | APPROVED_BY_DIRECTOR
+  // ACCOUNTING_REVIEW | ACCOUNTING_VALIDATED | FINANCIAL_CONTROL | AUTHORIZED
+  // PAYMENT_PROCESSING | PAID | CLOSED | RETURNED_FOR_CORRECTION
+  status         String        @default("DRAFT")
+  notes          String?
+  calculatedAt   DateTime?
+  // Périmètre organisationnel — hérité du créateur du batch
+  organizationId String?       // nullable pour compatibilité rétroactive
+  submittedBy    String?       // userId qui a soumis au workflow
+  submittedAt    DateTime?
+  createdBy      String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  employees    BatchEmployee[]
-  records      PayrollRecord[]
+  employees         BatchEmployee[]
+  records           PayrollRecord[]
   attendanceRecords AttendanceRecord[]
-  lineItems    PayrollLineItem[]
+  lineItems         PayrollLineItem[]
+  auditFindings     AuditFinding[]
+  workflowActions   WorkflowAction[]
+  paymentOrder      PaymentOrder?
 
   @@unique([periodId, versionNumber])
   @@index([periodId])
   @@index([status])
+  @@index([organizationId])
   @@map("payroll_batches")
 }
 
@@ -160,6 +176,8 @@ model PayrollRecord {
   status          String       @default("CALCULATED") // CALCULATED, ERROR
   errorMessage    String?
   calculatedAt    DateTime     @default(now())
+
+  paymentTransaction PaymentTransaction?
 
   @@unique([batchId, employeeId])
   @@index([batchId])
@@ -360,8 +378,16 @@ model User {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  sessions  Session[]
-  auditLogs AuditLog[]
+  employeeId       String?          @unique
+  employee         Employee?        @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+
+  sessions         Session[]
+  auditLogs        AuditLog[]
+  resolvedFindings AuditFinding[]
+  workflowActions  WorkflowAction[]
+  notifications    Notification[]
+  paymentOrdersCreated   PaymentOrder[] @relation("PaymentOrderCreator")
+  paymentOrdersConfirmed PaymentOrder[] @relation("PaymentOrderConfirmer")
 
   @@map("users")
 }
@@ -395,4 +421,171 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ── Phase 5 : Smart Audit & AI ────────────────────────────────────────────────
+
+model AuditFinding {
+  id             String        @id @default(cuid())
+  batchId        String
+  batch          PayrollBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  employeeId     String?
+  employee       Employee?     @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  type           String        // SALARY_VARIATION, DUPLICATE_EMPLOYEE, MISSING_DATA, INVALID_VALUE, ATTENDANCE_ANOMALY, ALLOWANCE_ANOMALY, DEDUCTION_ANOMALY, PAYROLL_TOTAL_VARIATION, RIB_DATA_ANOMALY, OTHER
+  severity       String        // INFO, WARNING, HIGH, CRITICAL
+  title          String
+  description    String
+  detectedValue  String?
+  expectedValue  String?
+  status         String        @default("OPEN") // OPEN, REVIEWED, CONFIRMED, FALSE_POSITIVE, RESOLVED
+  source         String        @default("RULE_ENGINE") // RULE_ENGINE, AI_ASSISTANT
+  confidence     Float?        // Indice de confiance (0.0 à 1.0)
+  createdAt      DateTime      @default(now())
+  resolvedAt     DateTime?
+  resolvedBy     String?       // userId du réviseur
+  resolvedByUser User?         @relation(fields: [resolvedBy], references: [id], onDelete: SetNull)
+  resolutionNote String?
+
+  aiAnalyses     AIAnalysis[]
+
+  @@index([batchId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([severity])
+  @@index([type])
+  @@map("audit_findings")
+}
+
+model AIAnalysis {
+  id             String       @id @default(cuid())
+  findingId      String
+  finding        AuditFinding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  model          String       // ex: gemini-2.5-flash
+  analysis       String       // Explication détaillée
+  recommendation String       // Proposition d'action humaine
+  confidence     Float        // 0.0 à 1.0
+  possibleCauses String?      // JSON sérialisé des causes possibles
+  dataConsidered String?      // JSON des métadonnées contextuelles analysées
+  createdAt      DateTime     @default(now())
+
+  @@index([findingId])
+  @@map("ai_analyses")
+}
+
+// ── Phase 6 : Workflow d'approbation multi-niveaux ────────────────────────────
+
+/// Trace chaque transition dans le workflow institutionnel de paie.
+/// Immuable — ne jamais supprimer un WorkflowAction.
+model WorkflowAction {
+  id         String       @id @default(cuid())
+  batchId    String
+  batch      PayrollBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  actorId    String
+  actor      User         @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  action     String       // SUBMIT_TO_CHEF | TAKE_CHEF_REVIEW | APPROVE_CHEF | RETURN_BY_CHEF | ...
+  fromStatus String       // Statut avant la transition
+  toStatus   String       // Statut après la transition
+  reason     String?      // Obligatoire pour les retours (RETURN_BY_*)
+  metadata   String?      // JSON safe — jamais de secrets
+  createdAt  DateTime     @default(now())
+
+  @@index([batchId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([action])
+  @@map("workflow_actions")
+}
+
+/// Notifications système liées aux transitions workflow.
+/// Un utilisateur ne peut voir et modifier que ses propres notifications.
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // BATCH_SUBMITTED | BATCH_APPROVED | BATCH_RETURNED | PAYMENT_AUTHORIZED
+  titleAr   String
+  messageAr String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+
+  @@index([userId, isRead, createdAt])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+// ── Phase 8 : Paiement • Ordres de Paiement • Clôture ──────────────────────────
+
+/// Ordre de paiement institutionnel lié à un PayrollBatch AUTHORIZED.
+/// Immuable une fois CLOSED. Source de vérité opérationnelle du processus de paiement.
+model PaymentOrder {
+  id                   String               @id @default(cuid())
+  /// Référence unique lisible — ex: OP-202610-A1B2C3D4
+  reference            String               @unique
+  batchId              String               @unique
+  batch                PayrollBatch         @relation(fields: [batchId], references: [id])
+  /// PREPARED | PROCESSING | PAID | RECONCILED | CLOSED | FAILED
+  status               String               @default("PREPARED")
+  totalAmount          Decimal
+  employeeCount        Int
+  currency             String               @default("DZD")
+  /// GENERIC_BANK_TRANSFER (toujours — aucun format bancaire officiel prétendu)
+  bankFormat           String               @default("GENERIC_BANK_TRANSFER")
+  fileName             String?
+  fileHash             String?              // SHA-256 hex digest du contenu du fichier
+  fileSize             Int?                 // taille en octets
+  createdById          String?
+  createdBy            User?                @relation("PaymentOrderCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  confirmedById        String?
+  confirmedBy          User?                @relation("PaymentOrderConfirmer", fields: [confirmedById], references: [id], onDelete: SetNull)
+  /// MANUAL_CONTROLLED (V1 — aucune banque réelle connectée)
+  confirmationMethod   String?              @default("MANUAL_CONTROLLED")
+  confirmationRef      String?              // Référence fournie lors de la confirmation
+  processingStartedAt  DateTime?
+  paidAt               DateTime?
+  closedAt             DateTime?
+  failureReason        String?
+  reconciliationNotes  String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  transactions PaymentTransaction[]
+
+  @@index([status])
+  @@index([batchId])
+  @@map("payment_orders")
+}
+
+/// Transaction de paiement individuelle par employé au sein d'un PaymentOrder.
+/// Le RIB complet n'est PAS stocké ici — uniquement les 4 derniers chiffres masqués.
+model PaymentTransaction {
+  id              String        @id @default(cuid())
+  paymentOrderId  String
+  paymentOrder    PaymentOrder  @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employee        Employee      @relation(fields: [employeeId], references: [id])
+  payrollRecordId String        @unique
+  payrollRecord   PayrollRecord @relation(fields: [payrollRecordId], references: [id])
+  /// Référence unique de la transaction — ex: TX-OP-202610-001
+  reference       String        @unique
+  amount          Decimal
+  /// RIB masqué : uniquement les 4 derniers chiffres — jamais le RIB complet
+  ribMasked       String
+  /// Snapshot immuable des données au moment de l'émission de l'ordre
+  snapshotMatricule String?
+  snapshotName      String?
+  /// RIB complet capturé lors de l'ordre — strictement réservé à la génération serveur du fichier technique
+  ribSnapshot       String?
+  currency          String        @default("DZD")
+  /// PENDING | PAID | FAILED
+  status          String        @default("PENDING")
+  failureReason   String?
+  confirmedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([paymentOrderId])
+  @@index([status])
+  @@index([employeeId])
+  @@map("payment_transactions")
 }

@@ -412,3 +412,113 @@ export async function resetUserPasswordAction(
     };
   }
 }
+
+/**
+ * Server Action : Suppression définitive d'un utilisateur avec protections critiques
+ */
+export async function deleteUserAction(
+  userId: string
+): Promise<ActionResult> {
+  try {
+    const caller = await verifyAdminCaller("users.disable");
+
+    if (!userId || typeof userId !== "string") {
+      return { success: false, error: "معرّف المستخدم غير صالح." };
+    }
+
+    // Protection 1 : Interdiction de supprimer son propre compte
+    if (caller.id === userId) {
+      return {
+        success: false,
+        error: "عملية مرفوضة: لا يمكنك حذف حسابك الشخصي الذي تستخدمه حالياً.",
+      };
+    }
+
+    // Récupérer l'utilisateur avec ses dépendances critiques
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        role: true,
+        workflowActions: { select: { id: true }, take: 1 },
+      },
+    });
+
+    if (!targetUser) {
+      return { success: false, error: "المستخدم غير موجود أو تم حذفه مسبقاً." };
+    }
+
+    // Protection 2 : Protection du dernier ADMIN actif
+    if (targetUser.role.code === "ADMIN" && targetUser.isActive) {
+      const activeAdminCount = await prisma.user.count({
+        where: {
+          role: { code: "ADMIN" },
+          isActive: true,
+        },
+      });
+
+      if (activeAdminCount <= 1) {
+        return {
+          success: false,
+          error:
+            "عملية مرفوضة: لا يمكن حذف آخر مدير نظام نشط. يجب أن يظل مدير نشط واحد على الأقل لضمان استمرارية الإدارة.",
+        };
+      }
+    }
+
+    // Protection 3 : Si l'utilisateur a participé à des actions de workflow immuables
+    if (targetUser.workflowActions && targetUser.workflowActions.length > 0) {
+      return {
+        success: false,
+        error:
+          "لا يمكن حذف هذا المستخدم نهائياً نظراً لارتباطه بسجلات سير العمل (Workflow) المعتمدة. للحفاظ على سلامة التدقيق المالي، يُرجى تعطيل الحساب بدلاً من حذفه.",
+      };
+    }
+
+    // Invalider immédiatement toutes les sessions actives
+    await invalidateAllUserSessions(userId);
+
+    // Suppression définitive dans Prisma
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    // Journalisation d'audit
+    await recordAuditLog({
+      userId: caller.id,
+      action: "USER_DELETED",
+      resourceType: "USER",
+      resourceId: userId,
+      details: {
+        targetEmail: targetUser.email,
+        targetName: `${targetUser.firstName} ${targetUser.lastName}`,
+        targetRole: targetUser.role.code,
+      },
+    });
+
+    revalidatePath("/admin/users");
+    revalidatePath("/admin/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2003"
+    ) {
+      return {
+        success: false,
+        error:
+          "تعذر حذف المستخدم لوجود بيانات وسجلات مرتبطة به. يوصى بتعطيل حسابه لمنعه من الوصول.",
+      };
+    }
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "حدث خطأ غير متوقع أثناء محاولة حذف المستخدم.",
+    };
+  }
+}
+

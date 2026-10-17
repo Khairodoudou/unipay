@@ -115,7 +115,21 @@ export default async function EmployeeDetailPage({ params }: EmployeeDetailPageP
 
         <div className="flex items-center gap-3">
           {statusBadge(employee.status)}
-          <EmployeeDetailClient employee={employee} units={units} />
+          <EmployeeDetailClient
+            employee={{
+              id: employee.id,
+              firstName: employee.firstName,
+              lastName: employee.lastName,
+              status: employee.status,
+              baseSalary: Number(employee.baseSalary),
+              organizationUnitId: employee.organizationUnitId,
+              grade: employee.grade,
+              position: employee.position,
+              rib: employee.rib,
+              bankName: employee.bankName,
+            }}
+            units={units}
+          />
         </div>
       </div>
 

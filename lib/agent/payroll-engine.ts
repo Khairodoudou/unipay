@@ -231,7 +231,13 @@ export async function calculateBatchAction(
       include: { period: true },
     });
     if (!batch) return { success: false, error: "الدفعة غير موجودة." };
-    if (!["DRAFT", "CALCULATED", "RETURNED_FOR_CORRECTION"].includes(batch.status)) {
+    if (batch.status === "RETURNED_FOR_CORRECTION") {
+      return {
+        success: false,
+        error: "الدفعة معادة للتصحيح ومجمدة للحفاظ على الأثر الرقابي. يرجى إنشاء نسخة جديدة (Version) للتصحيح والاحتساب.",
+      };
+    }
+    if (!["DRAFT", "CALCULATED"].includes(batch.status)) {
       return { success: false, error: `لا يمكن احتساب دفعة بحالة "${batch.status}".` };
     }
 

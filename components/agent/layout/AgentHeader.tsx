@@ -1,6 +1,7 @@
 import { UserSessionData } from "@/lib/auth/session";
 import { logoutAction } from "@/lib/auth/actions";
 import { LogOut, Building2, UserCheck, Calculator } from "lucide-react";
+import { NotificationBell } from "@/components/workflow/NotificationBell";
 
 interface AgentHeaderProps {
   user: UserSessionData;
@@ -25,8 +26,10 @@ export function AgentHeader({ user }: AgentHeaderProps) {
           </div>
         </div>
 
-        {/* Right (RTL Left) - User details & Logout */}
+        {/* Right (RTL Left) - User details, NotificationBell & Logout */}
         <div className="flex items-center gap-4">
+          <NotificationBell />
+
           <div className="text-left sm:text-right hidden sm:block">
             <div className="flex items-center gap-1.5 justify-end">
               <UserCheck className="w-3.5 h-3.5 text-teal-600" />

@@ -10,6 +10,7 @@ import {
   Users,
   Clock,
   DollarSign,
+  ShieldAlert,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -105,6 +106,13 @@ export default async function CalculateBatchPage({ params }: CalculatePageProps)
         >
           <Calculator className="w-4 h-4" />
           <span>محرك الاحتساب والتحقق</span>
+        </Link>
+        <Link
+          href={`/agent/batches/${batch.id}/audit`}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shrink-0 transition-colors"
+        >
+          <ShieldAlert className="w-4 h-4 text-slate-400" />
+          <span>التدقيق الذكي (Smart Audit)</span>
         </Link>
       </div>
 

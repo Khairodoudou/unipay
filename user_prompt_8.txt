@@ -1,0 +1,1475 @@
+<USER_REQUEST>
+# UNI-PAY — PHASE 8
+# IMPLÉMENTATION FINALE — PAIEMENT • ORDRES DE PAIEMENT • FICHIERS BANCAIRES • RAPPROCHEMENT • CLÔTURE
+
+Tu es Claude Sonnet 4.6, ingénieur logiciel senior spécialisé en Next.js, TypeScript, Prisma, sécurité applicative, systèmes financiers et architectures transactionnelles.
+
+Tu travailles sur le projet UNI-PAY.
+
+============================================================
+0. MISSION
+============================================================
+
+Implémente la PHASE 8 complète de UNI-PAY.
+
+Objectif :
+
+Transformer un lot de paie officiellement AUTHORIZED en processus de paiement contrôlé permettant :
+
+AUTHORIZED
+→ validation pré-paiement
+→ création PaymentOrder
+→ préparation du paiement
+→ PAYMENT_PROCESSING
+→ génération d'un fichier technique générique
+→ confirmation contrôlée
+→ rapprochement
+→ PAID
+→ CLOSED
+
+IMPORTANT :
+
+Cette Phase 8 est une simulation/gestion institutionnelle de paiement et de fichiers techniques.
+
+UNI-PAY NE DOIT PAS prétendre être connecté à une banque.
+
+NE PAS implémenter :
+
+- API bancaire réelle
+- CIB
+- Edahabia
+- SATIM
+- SWIFT réel
+- API bancaire
+- connexion directe à une banque
+- paiement automatique réel
+- transfert bancaire réel
+
+Le fichier généré doit être explicitement présenté comme :
+
+"Export technique générique UNI-PAY — non présenté comme format bancaire officiel."
+
+============================================================
+1. RÈGLE ABSOLUE : INSPECTION AVANT MODIFICATION
+============================================================
+
+AVANT toute modification :
+
+1. inspecte le projet complet ;
+2. inspecte prisma/schema.prisma ;
+3. inspecte lib/workflow/states.ts ;
+4. inspecte lib/workflow/transitions.ts ;
+5. inspecte lib/workflow/workflow-engine.ts ;
+6. inspecte lib/workflow/notifications.ts ;
+7. inspecte lib/rbac/permissions.ts ;
+8. inspecte les guards RBAC ;
+9. inspecte l'authentification ;
+10. inspecte PayrollBatch ;
+11. inspecte PayrollRecord ;
+12. inspecte Employee ;
+13. inspecte WorkflowAction ;
+14. inspecte AuditLog ;
+15. inspecte Notification ;
+16. inspecte les Server Actions existantes ;
+17. inspecte les espaces Comptable / Directeur / Contrôleur ;
+18. inspecte les tests Phases 2 à 7 ;
+19. inspecte les migrations Prisma existantes ;
+20. inspecte les fixtures CLOSED de Phase 5.
+
+NE MODIFIE RIEN avant cette inspection.
+
+Présente d'abord :
+
+- architecture trouvée ;
+- modèles réutilisables ;
+- risques ;
+- conflits éventuels ;
+- plan d'implémentation détaillé.
+
+Puis seulement après validation technique interne, commence l'implémentation.
+
+============================================================
+2. ÉTAT ACTUEL À PRÉSERVER
+============================================================
+
+Le workflow Phase 6 existant est :
+
+READY_FOR_REVIEW
+→ CHEF_REVIEW
+→ APPROVED_BY_CHEF
+→ DIRECTOR_REVIEW
+→ APPROVED_BY_DIRECTOR
+→ ACCOUNTING_REVIEW
+→ ACCOUNTING_VALIDATED
+→ FINANCIAL_CONTROL
+→ AUTHORIZED
+
+Cette partie est déjà validée.
+
+NE PAS casser les transitions Phase 6.
+
+NE PAS modifier les règles d'approbation précédentes sauf nécessité technique strictement démontrée.
+
+Phase 8 commence UNIQUEMENT à :
+
+AUTHORIZED
+
+============================================================
+3. SOURCE DE VÉRITÉ
+============================================================
+
+Règle fondamentale :
+
+PayrollBatch.status = SOURCE DE VÉRITÉ INSTITUTIONNELLE.
+
+PaymentOrder.status = ÉTAT OPÉRATIONNEL DU PROCESSUS DE PAIEMENT.
+
+PaymentTransaction.status = ÉTAT INDIVIDUEL DU règlement.
+
+Ils doivent rester cohérents.
+
+Ne crée jamais un deuxième workflow institutionnel indépendant.
+
+Correspondance :
+
+AUTHORIZED
++
+PaymentOrder PREPARED
+
+PAYMENT_PROCESSING
++
+PaymentOrder PROCESSING
+
+PAID
++
+PaymentOrder PAID ou RECONCILED
+
+CLOSED
++
+PaymentOrder CLOSED
+
+============================================================
+4. NOUVEAUX STATUTS DU PAYROLL BATCH
+============================================================
+
+Les statuts suivants existent déjà dans le projet :
+
+PAYMENT_PROCESSING
+PAID
+CLOSED
+
+Ils doivent maintenant être activés correctement dans le workflow central.
+
+Transitions Phase 8 :
+
+1.
+AUTHORIZED
+→ PAYMENT_PROCESSING
+
+Action :
+START_PAYMENT_PROCESSING
+
+Permission :
+payment.process
+
+2.
+PAYMENT_PROCESSING
+→ PAID
+
+Action :
+CONFIRM_PAYMENT
+
+Permission :
+payment.confirm
+
+3.
+PAID
+→ CLOSED
+
+Action :
+CLOSE_BATCH
+
+Permission :
+payment.close
+
+AUCUNE autre transition automatique ne doit être ajoutée.
+
+INTERDIT :
+
+DRAFT → PAYMENT_PROCESSING
+
+CALCULATED → PAYMENT_PROCESSING
+
+RETURNED_FOR_CORRECTION → PAYMENT_PROCESSING
+
+CHEF_REVIEW → PAYMENT_PROCESSING
+
+DIRECTOR_REVIEW → PAYMENT_PROCESSING
+
+ACCOUNTING_REVIEW → PAYMENT_PROCESSING
+
+FINANCIAL_CONTROL → PAYMENT_PROCESSING
+
+============================================================
+5. CONDITIONS POUR AUTHORIZED → PAYMENT_PROCESSING
+============================================================
+
+AVANT de permettre START_PAYMENT_PROCESSING :
+
+exécuter obligatoirement une validation serveur complète.
+
+Créer :
+
+lib/payment/payment-validation.ts
+
+Le contrôle doit vérifier :
+
+1. batch existe ;
+2. batch appartient à l'organisation de l'utilisateur ;
+3. batch.status === AUTHORIZED ;
+4. batch possède des PayrollRecords ;
+5. nombre d'employés > 0 ;
+6. chaque PayrollRecord correspond à un Employee valide ;
+7. chaque Employee possède un RIB non vide ;
+8. le RIB respecte la validation structurelle définie par le projet ;
+9. aucune anomalie de RIB dans le même lot ;
+10. aucun doublon de RIB dans le lot ;
+11. chaque montant net est valide ;
+12. aucun montant négatif ou incohérent ;
+13. total batch = somme exacte des PayrollRecord.netAmount ;
+14. total > 0 ;
+15. aucun PayrollRecord manquant ;
+16. aucune incohérence Employee ↔ PayrollRecord ;
+17. aucune version intermédiaire ou rejetée ne doit être utilisée.
+
+IMPORTANT :
+
+Le système peut vérifier la structure et la cohérence du RIB.
+
+Il NE DOIT PAS prétendre vérifier qu'un compte bancaire est réellement actif sans intégration bancaire.
+
+============================================================
+6. RAPPORT DE PRÉ-VOL
+============================================================
+
+La validation ne doit pas retourner uniquement "true/false".
+
+Créer une structure de résultat détaillée :
+
+{
+  valid: boolean,
+  totalAmount,
+  employeeCount,
+  errors: [],
+  warnings: [],
+  missingRibs: [],
+  invalidRibs: [],
+  duplicateRibs: [],
+  invalidAmounts: [],
+  inconsistencies: []
+}
+
+L'utilisateur doit pouvoir comprendre pourquoi le paiement est bloqué.
+
+Aucune donnée sensible inutile dans les erreurs.
+
+RIB :
+toujours masqué sauf nécessité opérationnelle contrôlée.
+
+============================================================
+7. MODÈLE PaymentOrder
+============================================================
+
+Créer un modèle PaymentOrder si aucun modèle équivalent n'existe.
+
+Proposition :
+
+PaymentOrder
+
+- id
+- reference
+- batchId UNIQUE
+- status
+- totalAmount
+- employeeCount
+- currency
+- bankFormat
+- fileName
+- fileHash
+- fileSize
+- createdById
+- createdAt
+- updatedAt
+- processingStartedAt
+- paidAt
+- closedAt
+- failureReason
+- reconciliationNotes
+- confirmationMethod
+- confirmedById
+
+Statuts :
+
+PREPARED
+PROCESSING
+PAID
+RECONCILED
+CLOSED
+FAILED
+
+IMPORTANT :
+
+PaymentOrder ne remplace jamais PayrollBatch.
+
+============================================================
+8. MODÈLE PaymentTransaction
+============================================================
+
+Créer PaymentTransaction uniquement si aucun modèle existant ne couvre déjà cette responsabilité.
+
+Champs recommandés :
+
+- id
+- paymentOrderId
+- employeeId
+- payrollRecordId
+- reference UNIQUE
+- amount
+- ribMasked
+- status
+- failureReason
+- confirmedAt
+- createdAt
+- updatedAt
+
+Statuts :
+
+PENDING
+PAID
+FAILED
+
+IMPORTANT :
+
+Ne stocke PAS le RIB complet dans PaymentTransaction.
+
+Le RIB réel utilisé pour générer le fichier doit être lu côté serveur depuis Employee.rib.
+
+============================================================
+9. CALCUL DES MONTANTS
+============================================================
+
+JAMAIS faire confiance au frontend.
+
+Le serveur doit recalculer :
+
+employeeCount
+totalAmount
+transactions
+amount
+
+Le client peut seulement demander une opération.
+
+Le serveur récupère les données officielles depuis Prisma.
+
+Exemple :
+
+totalAmount =
+SUM(PayrollRecord.netAmount)
+
+Ne jamais accepter :
+
+totalAmount envoyé par le client.
+
+============================================================
+10. RIB
+============================================================
+
+Le RIB est une donnée sensible.
+
+Règles :
+
+- jamais depuis le frontend comme source de vérité ;
+- jamais depuis localStorage ;
+- jamais depuis un champ caché HTML ;
+- jamais depuis une URL ;
+- toujours depuis Employee.rib côté serveur.
+
+Affichage :
+
+****1234
+
+Logs :
+
+ne jamais enregistrer le RIB complet.
+
+Audit :
+
+RIB masqué.
+
+Erreurs :
+
+RIB masqué.
+
+Fichier bancaire technique :
+
+Le RIB complet peut être inclus uniquement dans le fichier généré côté serveur car il constitue précisément la donnée nécessaire à l'export technique.
+
+Ce fichier doit être traité comme hautement confidentiel.
+
+============================================================
+11. PERMISSIONS
+============================================================
+
+Ajouter uniquement les permissions réellement nécessaires :
+
+payment.read
+payment.prepare
+payment.process
+payment.confirm
+payment.reconcile
+payment.close
+
+MAPPING :
+
+COMPTABLE :
+
+payment.read
+payment.prepare
+payment.process
+payment.confirm
+payment.reconcile
+payment.close
+
+CONTROLEUR_FINANCIER :
+
+payment.read
+
+DIRECTEUR :
+
+payment.read
+payment.close
+
+AGENT_RH :
+
+AUCUNE permission de paiement par défaut.
+
+EMPLOYE :
+
+AUCUNE permission de paiement.
+
+ADMIN :
+
+AUCUN contournement du workflow financier.
+
+IMPORTANT :
+
+ADMIN ne doit pas pouvoir utiliser l'espace paiement uniquement parce qu'il est ADMIN.
+
+L'administration technique reste séparée du processus métier financier.
+
+============================================================
+12. PAYMENT.AUTHORIZE
+============================================================
+
+Une permission payment.authorize existe déjà.
+
+NE PAS créer un doublon.
+
+Inspecte son utilisation actuelle.
+
+Si elle représente uniquement l'ancienne autorisation avant paiement :
+
+- conserver pour compatibilité si nécessaire ;
+- documenter clairement son rôle ;
+- ne pas lui donner automatiquement le pouvoir de confirmer ou clôturer un paiement.
+
+La Phase 8 doit utiliser les nouvelles permissions de manière explicite.
+
+============================================================
+13. TRANSITION AUTHORIZED → PAYMENT_PROCESSING
+============================================================
+
+L'opération doit suivre exactement :
+
+1. session valide ;
+2. utilisateur actif ;
+3. rôle ;
+4. permission ;
+5. organisation ;
+6. batch existe ;
+7. batch AUTHORIZED ;
+8. validation pré-paiement ;
+9. création PaymentOrder PREPARED ;
+10. création PaymentTransactions ;
+11. génération de référence ;
+12. transaction Prisma atomique ;
+13. transition batch → PAYMENT_PROCESSING ;
+14. PaymentOrder → PROCESSING ;
+15. WorkflowAction ;
+16. AuditLog ;
+17. Notification ;
+18. revalidation UI.
+
+Tout doit être atomique.
+
+Si une étape échoue :
+
+ROLLBACK.
+
+============================================================
+14. CONCURRENCE
+============================================================
+
+Protection obligatoire.
+
+Utiliser par exemple :
+
+updateMany({
+ where: {
+   id: batchId,
+   status: "AUTHORIZED"
+ },
+ data: {
+   status: "PAYMENT_PROCESSING"
+ }
+})
+
+Si count === 0 :
+
+échec propre.
+
+La seconde requête concurrente ne doit produire aucun effet.
+
+Même principe pour :
+
+PAYMENT_PROCESSING → PAID
+
+PAID → CLOSED
+
+============================================================
+15. FICHIER BANCAIRE TECHNIQUE
+============================================================
+
+Créer :
+
+lib/payment/bank-file-service.ts
+
+Format :
+
+GENERIC_BANK_TRANSFER
+
+Format CSV structuré :
+
+REF_VIREMENT,
+MATRICULE,
+NOM_PRENOM,
+RIB,
+MONTANT,
+DEVISE,
+MOTIF
+
+IMPORTANT :
+
+Le système doit afficher clairement :
+
+"Export technique générique UNI-PAY — non présenté comme format bancaire officiel."
+
+NE PAS utiliser :
+
+SEPA DZ
+
+SWIFT
+
+CIB
+
+SATIM
+
+Edahabia
+
+ou tout autre format officiel sans intégration/documentation réelle.
+
+============================================================
+16. HASH SHA-256
+============================================================
+
+À chaque génération :
+
+- générer le contenu ;
+- calculer SHA-256 ;
+- enregistrer fileHash ;
+- enregistrer fileSize ;
+- enregistrer fileName.
+
+Le hash sert à vérifier l'intégrité du fichier.
+
+Ne pas considérer le hash comme une signature électronique légale.
+
+============================================================
+17. STOCKAGE DU FICHIER
+============================================================
+
+INTERDIT :
+
+/public
+
+URLs publiques
+
+liens permanents accessibles sans authentification.
+
+Préférer :
+
+génération contrôlée côté serveur
+
+ou stockage privé si nécessaire.
+
+Le téléchargement doit vérifier :
+
+session
++
+compte actif
++
+permission
++
+organisation
++
+PaymentOrder
++
+intégrité
+
+Headers :
+
+Cache-Control: private, no-store, max-age=0, must-revalidate
+
+Pragma: no-cache
+
+============================================================
+18. CONFIRMATION DU PAIEMENT
+============================================================
+
+V1 :
+
+Aucune banque réelle.
+
+Donc utiliser :
+
+MANUAL_CONTROLLED
+
+ou
+
+BANK_FILE_RETURN
+
+uniquement si un vrai retour bancaire est réellement implémenté.
+
+Pour MANUAL_CONTROLLED :
+
+l'utilisateur doit fournir :
+
+- référence de confirmation ;
+- motif ;
+- confirmation explicite.
+
+Le système doit enregistrer :
+
+- actor ;
+- date ;
+- méthode ;
+- référence ;
+- PaymentOrder ;
+- transactions concernées ;
+- AuditLog ;
+- WorkflowAction.
+
+IMPORTANT :
+
+Le bouton "Confirmer paiement" ne doit pas être présenté comme un transfert bancaire réel.
+
+Libellé UI recommandé :
+
+"Confirmer l'exécution contrôlée"
+
+============================================================
+19. PAYMENT PARTIEL / ÉCHEC
+============================================================
+
+Ne jamais transformer automatiquement un lot en PAID si :
+
+- transaction FAILED ;
+- transaction PENDING ;
+- montant non rapproché ;
+- montant différent ;
+- référence inconnue ;
+- doublon ;
+- anomalie bloquante.
+
+Créer des états de rapprochement :
+
+MATCHED
+UNMATCHED
+AMOUNT_MISMATCH
+FAILED
+DUPLICATE
+UNKNOWN_REFERENCE
+
+Si paiement partiel :
+
+le lot reste non-PAID jusqu'à résolution selon les règles métier.
+
+Ne jamais cacher les échecs.
+
+============================================================
+20. RAPPROCHEMENT
+============================================================
+
+Créer :
+
+lib/payment/reconciliation-service.ts
+
+Priorité :
+
+1. transaction reference ;
+2. payment order reference ;
+3. matricule + montant.
+
+Ne jamais utiliser le nom seul comme clé de rapprochement.
+
+Le service doit produire un rapport :
+
+matched
+unmatched
+amountMismatch
+failed
+duplicate
+unknownReference
+
+============================================================
+21. PASSAGE PAYMENT_PROCESSING → PAID
+============================================================
+
+Ne pas autoriser :
+
+CONFIRM_PAYMENT
+→ PAID
+
+uniquement avec un simple bouton.
+
+Avant la transition :
+
+1. PaymentOrder existe ;
+2. status PROCESSING ;
+3. transactions existent ;
+4. toutes les transactions sont dans un état acceptable ;
+5. montants cohérents ;
+6. confirmation contrôlée enregistrée ;
+7. rapprochement conforme ou explicitement résolu ;
+8. aucune anomalie bloquante ;
+9. organisation correcte ;
+10. transaction atomique.
+
+Puis :
+
+PayrollBatch → PAID
+
+PaymentOrder → PAID ou RECONCILED selon le modèle retenu.
+
+============================================================
+22. PAID → CLOSED
+============================================================
+
+La clôture est une opération distincte.
+
+Prérequis :
+
+1. PayrollBatch.status === PAID
+2. PaymentOrder existe
+3. PaymentOrder cohérent
+4. toutes les transactions sont résolues
+5. aucun écart bloquant
+6. total cohérent
+7. rapprochement terminé
+8. utilisateur autorisé
+9. organisation correcte.
+
+Puis :
+
+PayrollBatch → CLOSED
+
+PaymentOrder → CLOSED
+
+AuditLog.
+
+WorkflowAction.
+
+Notification.
+
+============================================================
+23. IMMUTABILITÉ CLOSED
+============================================================
+
+Une fois CLOSED :
+
+INTERDIRE côté serveur :
+
+- modification PayrollRecord ;
+- modification salaire ;
+- modification indemnité ;
+- modification retenue ;
+- modification Employee utilisée pour recalculer ce lot ;
+- modification PaymentOrder ;
+- modification PaymentTransaction.
+
+Les tentatives doivent être rejetées.
+
+La sécurité ne doit PAS dépendre uniquement de l'interface.
+
+============================================================
+24. CORRECTION APRÈS PAID/CLOSED
+============================================================
+
+NE JAMAIS modifier rétroactivement un lot CLOSED.
+
+Si une correction métier est nécessaire :
+
+créer un nouveau processus/version de paie.
+
+Ne jamais :
+
+UPDATE silencieux du lot CLOSED.
+
+============================================================
+25. NOTIFICATIONS
+============================================================
+
+Réutiliser le système Notification existant.
+
+Ne pas créer un deuxième système.
+
+Créer des types adaptés :
+
+PAYMENT_READY
+PAYMENT_PROCESSING
+PAYMENT_CONFIRMED
+PAYMENT_RECONCILIATION_REQUIRED
+PAYMENT_PAID
+PAYMENT_CLOSED
+PAYMENT_FAILED
+
+Notifications ciblées :
+
+Comptable
+Directeur si pertinent
+Contrôleur financier si pertinent
+Agent RH uniquement pour information si explicitement nécessaire.
+
+Employé :
+
+recevoir une notification lorsque le paiement de son bulletin est effectivement marqué comme payé, si cette fonctionnalité est cohérente avec le modèle existant.
+
+Ne jamais exposer des données financières d'autres employés.
+
+Notifications idempotentes.
+
+============================================================
+26. AUDIT LOG
+============================================================
+
+Tracer :
+
+PAYMENT_ORDER_CREATED
+PAYMENT_PROCESSING_STARTED
+PAYMENT_FILE_GENERATED
+PAYMENT_CONFIRMED
+PAYMENT_RECONCILED
+PAYMENT_FAILED
+PAYMENT_MARKED_PAID
+PAYMENT_BATCH_CLOSED
+
+Audit :
+
+userId
+action
+resourceType
+resourceId
+timestamp
+organization
+metadata minimal
+
+INTERDIT :
+
+- mot de passe ;
+- token ;
+- secret ;
+- RIB complet ;
+- données sensibles inutiles.
+
+============================================================
+27. ORGANISATION / MULTI-TENANCY
+============================================================
+
+Toutes les opérations doivent vérifier :
+
+user.organizationId === batch.organizationId
+
+ET lorsque nécessaire :
+
+PaymentOrder → batch → organization.
+
+Un utilisateur d'une organisation ne peut jamais :
+
+- consulter ;
+- télécharger ;
+- modifier ;
+- confirmer ;
+- rapprocher ;
+- clôturer
+
+un paiement d'une autre organisation.
+
+============================================================
+28. INTERFACE COMPTABLE
+============================================================
+
+Créer :
+
+/comptable/payment
+
+/comptable/payment/[id]
+
+Éventuellement :
+
+/comptable/payment/[id]/reconciliation
+
+Réutiliser le layout Comptable existant.
+
+UI RTL.
+
+Responsive.
+
+États :
+
+- loading ;
+- empty ;
+- error ;
+- blocked ;
+- authorized ;
+- processing ;
+- paid ;
+- closed ;
+- failed.
+
+Dashboard paiement :
+
+- lots AUTHORIZED ;
+- paiements en cours ;
+- paiements payés ;
+- paiements à rapprocher ;
+- paiements échoués ;
+- montants totaux.
+
+UNIQUEMENT données réelles.
+
+Aucune donnée fictive.
+
+============================================================
+29. PAGE PAYMENT ORDER
+============================================================
+
+Afficher :
+
+- référence ;
+- lot ;
+- période ;
+- nombre employés ;
+- montant total ;
+- devise ;
+- statut ;
+- date création ;
+- date traitement ;
+- date paiement ;
+- date clôture ;
+- hash fichier ;
+- taille fichier ;
+- état rapprochement.
+
+RIB :
+
+toujours masqué dans l'interface.
+
+Actions selon permissions :
+
+- préparer ;
+- générer fichier ;
+- télécharger ;
+- confirmer ;
+- rapprocher ;
+- clôturer.
+
+Les boutons doivent dépendre des permissions ET du statut.
+
+============================================================
+30. ESPACES DES AUTRES RÔLES
+============================================================
+
+COMPTABLE :
+
+espace principal Phase 8.
+
+DIRECTEUR :
+
+consultation + clôture selon permission.
+
+CONTROLEUR_FINANCIER :
+
+consultation uniquement.
+
+AGENT_RH :
+
+pas de contrôle opérationnel du paiement.
+
+EMPLOYE :
+
+pas d'accès à la gestion du paiement.
+
+ADMIN :
+
+pas de contournement financier.
+
+============================================================
+31. SERVER ACTIONS / API
+============================================================
+
+Toutes les mutations :
+
+session
+→ active
+→ role
+→ permission
+→ organization
+→ Zod
+→ status
+→ business validation
+→ transaction
+→ audit
+→ notification
+→ revalidatePath
+
+Ne jamais faire confiance :
+
+- employeeId fourni par client ;
+- batchId sans vérification ;
+- totalAmount ;
+- RIB ;
+- status ;
+- role ;
+- permission.
+
+============================================================
+32. ZOD
+============================================================
+
+Créer des schemas Zod pour :
+
+CreatePaymentOrder
+StartPaymentProcessing
+ConfirmPayment
+ReconcilePayment
+ClosePayment
+
+Validation stricte.
+
+Confirmation :
+
+reference obligatoire.
+
+Raison :
+
+obligatoire lorsque nécessaire.
+
+Aucune entrée utilisateur directement injectée dans les logs ou fichiers sans validation/sanitation.
+
+============================================================
+33. MIGRATION PRISMA
+============================================================
+
+Utiliser une vraie migration Prisma.
+
+NE PAS considérer :
+
+prisma db push
+
+comme remplacement de la migration de production.
+
+Faire :
+
+prisma migrate dev
+
+ou procédure adaptée au projet.
+
+Puis :
+
+prisma generate
+
+Vérifier :
+
+prisma migrate status
+
+Ne jamais supprimer les données existantes.
+
+============================================================
+34. FIXTURES CLOSED DE PHASE 5
+============================================================
+
+Les 7 lots CLOSED existants sont des fixtures de tests Phase 5.
+
+NE PAS :
+
+- les supprimer ;
+- les modifier ;
+- les transformer en paiements ;
+- les utiliser comme vrais paiements.
+
+Ils doivent rester hors du workflow réel Phase 8.
+
+Les tests Phase 8 doivent créer leurs propres données isolées.
+
+============================================================
+35. TESTS
+============================================================
+
+Créer :
+
+scripts/test_phase8.ts
+
+Minimum 60 tests si nécessaire pour couvrir réellement les scénarios.
+
+Catégories :
+
+A. Auth/RBAC
+B. Organization isolation
+C. Workflow transitions
+D. Pre-payment validation
+E. PaymentOrder
+F. PaymentTransaction
+G. Amount integrity
+H. RIB security
+I. Generic bank file
+J. SHA-256
+K. secure download
+L. confirmation
+M. reconciliation
+N. failed payment
+O. partial payment
+P. concurrency
+Q. idempotence
+R. audit
+S. notifications
+T. CLOSED immutability
+U. client tampering
+V. forged IDs
+W. regression
+
+Tester au minimum :
+
+- non-authenticated ;
+- disabled user ;
+- wrong role ;
+- cross organization ;
+- unauthorized batch ;
+- DRAFT ;
+- CALCULATED ;
+- RETURNED_FOR_CORRECTION ;
+- AUTHORIZED ;
+- empty batch ;
+- missing RIB ;
+- invalid RIB ;
+- duplicate RIB ;
+- invalid amount ;
+- total mismatch ;
+- forged amount ;
+- forged RIB ;
+- forged status ;
+- forged employeeId ;
+- duplicate PaymentOrder ;
+- double-click ;
+- concurrent START ;
+- concurrent CONFIRM ;
+- concurrent CLOSE ;
+- failed transaction ;
+- partial payment ;
+- mismatch ;
+- unknown reference ;
+- duplicate reference ;
+- secure download ;
+- public file absence ;
+- CLOSED mutation rejection.
+
+============================================================
+36. NON-RÉGRESSION
+============================================================
+
+Après Phase 8 :
+
+Phase 2 tests : PASS
+Phase 3 tests : PASS
+Phase 4 tests : PASS
+Phase 5 tests : PASS
+Phase 6 tests : PASS
+Phase 7 tests : PASS
+Phase 8 tests : PASS
+
+Aucune régression acceptable.
+
+============================================================
+37. QUALITY CHECKS
+============================================================
+
+Exécuter :
+
+npm run typecheck
+
+npm run lint
+
+npm run build
+
+npx prisma migrate status
+
+npx prisma generate
+
+tests Phase 2 → Phase 8
+
+Corriger toutes les erreurs.
+
+Ne pas déclarer la phase terminée avec :
+
+- TypeScript errors ;
+- ESLint errors ;
+- build errors ;
+- failed tests ;
+- migration inconsistencies.
+
+============================================================
+38. DEFINITION OF DONE
+============================================================
+
+Phase 8 est considérée terminée uniquement si :
+
+[ ] AUTHORIZED → PAYMENT_PROCESSING fonctionne
+[ ] validation pré-paiement obligatoire
+[ ] PaymentOrder fonctionne
+[ ] PaymentTransaction fonctionne
+[ ] montant calculé côté serveur
+[ ] RIB lu côté serveur
+[ ] RIB sensible protégé
+[ ] fichier générique généré
+[ ] aucun fichier public
+[ ] SHA-256 enregistré
+[ ] téléchargement sécurisé
+[ ] confirmation contrôlée
+[ ] rapprochement fonctionnel
+[ ] erreurs de paiement gérées
+[ ] PAYMENT_PROCESSING → PAID sécurisé
+[ ] PAID → CLOSED sécurisé
+[ ] CLOSED immuable
+[ ] concurrence protégée
+[ ] idempotence protégée
+[ ] audit complet
+[ ] notifications fonctionnelles
+[ ] organisation isolée
+[ ] RBAC correct
+[ ] Admin ne contourne pas le paiement
+[ ] aucun paiement bancaire réel prétendu
+[ ] aucun format bancaire officiel prétendu
+[ ] migrations propres
+[ ] tests Phase 8 PASS
+[ ] tests Phases 2–7 PASS
+[ ] typecheck PASS
+[ ] lint PASS
+[ ] build PASS
+
+============================================================
+39. INTERDICTIONS ABSOLUES
+============================================================
+
+NE PAS :
+
+- intégrer CIB ;
+- intégrer Edahabia ;
+- intégrer SATIM ;
+- intégrer une banque réelle ;
+- simuler une API bancaire comme si elle était réelle ;
+- appeler le CSV "fichier bancaire officiel" ;
+- utiliser SEPA DZ ;
+- utiliser SWIFT ;
+- mettre des fichiers dans /public ;
+- accepter le RIB du frontend comme source de vérité ;
+- accepter le montant du frontend ;
+- permettre à ADMIN de contourner le workflow ;
+- permettre à EMPLOYE de gérer les paiements ;
+- modifier CLOSED ;
+- supprimer les fixtures Phase 5 ;
+- inventer des règles légales bancaires ;
+- inventer une conformité réglementaire ;
+- créer des données fictives dans les dashboards ;
+- créer un deuxième système de notifications ;
+- créer un deuxième workflow parallèle ;
+- utiliser db push comme migration de production ;
+- déclarer "paiement bancaire réel" une confirmation manuelle.
+
+============================================================
+40. ORDRE D'IMPLÉMENTATION OBLIGATOIRE
+============================================================
+
+ÉTAPE 1
+Inspection complète.
+
+ÉTAPE 2
+Plan technique final.
+
+ÉTAPE 3
+Prisma PaymentOrder + PaymentTransaction.
+
+ÉTAPE 4
+Migration Prisma réelle.
+
+ÉTAPE 5
+Permissions + seed.
+
+ÉTAPE 6
+Workflow states/transitions.
+
+ÉTAPE 7
+Payment validation.
+
+ÉTAPE 8
+Payment service transactionnel.
+
+ÉTAPE 9
+Payment transactions.
+
+ÉTAPE 10
+Bank file service + SHA-256.
+
+ÉTAPE 11
+Secure download.
+
+ÉTAPE 12
+Confirmation.
+
+ÉTAPE 13
+Reconciliation.
+
+ÉTAPE 14
+PAID → CLOSED.
+
+ÉTAPE 15
+Audit + notifications.
+
+ÉTAPE 16
+UI Comptable.
+
+ÉTAPE 17
+UI Directeur / Contrôleur si nécessaire.
+
+ÉTAPE 18
+Tests Phase 8.
+
+ÉTAPE 19
+Régression Phases 2–7.
+
+ÉTAPE 20
+TypeScript + ESLint + Build + Prisma.
+
+============================================================
+41. RAPPORT FINAL OBLIGATOIRE
+============================================================
+
+À la fin, fournir :
+
+1. fichiers créés ;
+2. fichiers modifiés ;
+3. modèles Prisma ;
+4. migrations ;
+5. permissions ;
+6. transitions ;
+7. services ;
+8. Server Actions ;
+9. routes ;
+10. sécurité ;
+11. fichiers génériques ;
+12. rapprochement ;
+13. notifications ;
+14. audit ;
+15. tests ;
+16. résultats Phase 2–8 ;
+17. typecheck ;
+18. lint ;
+19. build ;
+20. Prisma migration status ;
+21. problèmes restants ;
+22. limites réelles ;
+23. confirmation explicite :
+
+"Phase 8 COMPLETE"
+
+uniquement si tous les critères de Definition of Done sont réellement satisfaits.
+
+Sinon écrire :
+
+"Phase 8 INCOMPLETE"
+
+et indiquer exactement ce qui manque.
+
+============================================================
+OBJECTIF FINAL
+============================================================
+
+Architecture finale :
+
+PHASE 6
+FINANCIAL_CONTROL
+        ↓
+AUTHORIZED
+        ↓
+PHASE 8
+Pré-validation
+        ↓
+PaymentOrder PREPARED
+        ↓
+PAYMENT_PROCESSING
+        ↓
+Fichier technique générique
+        ↓
+Confirmation contrôlée
+        ↓
+Rapprochement
+        ↓
+PAID
+        ↓
+CLOSED
+
+Source institutionnelle :
+PayrollBatch
+
+État opérationnel :
+PaymentOrder
+
+État individuel :
+PaymentTransaction
+
+Aucune banque réelle.
+Aucun paiement bancaire réel.
+Aucun format bancaire officiel prétendu.
+
+Le système doit être sécurisé, transactionnel, traçable, idempotent, multi-organisation, compatible avec l'architecture existante et sans régression des Phases 2 à 7.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-08T00:50:18+02:00.
+
+The user's current state is as follows:
+Active Document: c:\Users\APPLe\Desktop\unipay\scripts\inspect_details.ts (LANGUAGE_TYPESCRIPT)
+Cursor is on line: 1
+Other open documents:
+- c:\Users\APPLe\Desktop\unipay\scripts\inspect_details.ts (LANGUAGE_TYPESCRIPT)
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from Gemini 3.8 Flash (High) to Claude Sonnet 4.6 (Thinking). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>
