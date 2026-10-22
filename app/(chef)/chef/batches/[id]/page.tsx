@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -86,12 +87,27 @@ export default async function ChefBatchDetailPage({
     notFound();
   }
 
-  const canAct = ["READY_FOR_REVIEW", "CHEF_REVIEW"].includes(batch.status);
+  // ── Aggregate Decimal totals server-side → pass as plain numbers to Client ──
+  const totalGross = batch.records.reduce((sum, r) => sum + Number(r.grossAmount ?? 0), 0);
+  const totalNet = batch.records.reduce((sum, r) => sum + Number(r.netAmount ?? 0), 0);
+  const totalDeductions = batch.records.reduce((sum, r) => sum + Number(r.totalDeductions ?? 0), 0);
+
+  const canAct = batch.status === "CHEF_REVIEW";
 
   return (
     <div className="space-y-6">
       <BatchReviewHeader
-        batch={batch}
+        batch={{
+          id: batch.id,
+          versionNumber: batch.versionNumber ?? 1,
+          label: batch.label,
+          status: batch.status,
+          period: batch.period,
+          totalGross,
+          totalNet,
+          totalDeductions,
+          employeeCount: batch._count.employees,
+        }}
         backHref="/chef/batches"
         backLabel="العودة لقائمة الدفعات"
         subtitle="مراجعة مطابقة الحسابات والتدقيق قبل المصادقة والإحالة لمديرية المؤسسة"
@@ -123,6 +139,18 @@ export default async function ChefBatchDetailPage({
             approveAction={approveByChefAction}
             rejectAction={returnByChefAction}
           />
+        </div>
+      ) : batch.status === "READY_FOR_REVIEW" ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>
+              هذه الدفعة جاهزة ومحسوبة، ولكنها <strong>بانتظار الإحالة الرسمية</strong> من طرف عون الموارد البشرية (Agent RH) للبدء في مراجعتها.
+            </span>
+          </div>
+          <span className="text-amber-700 font-mono text-[11px] bg-amber-100 px-2 py-0.5 rounded">
+            قيد انتظار الإرسال
+          </span>
         </div>
       ) : (
         <div className="bg-slate-100 border border-slate-200 rounded-xl p-4 text-xs text-slate-600 flex items-center justify-between">

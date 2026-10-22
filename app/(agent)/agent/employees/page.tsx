@@ -33,7 +33,7 @@ interface EmployeesPageProps {
 }
 
 export default async function EmployeesPage({ searchParams }: EmployeesPageProps) {
-  await requireRole(["AGENT_RH", "ADMIN"]);
+  const currentUser = await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
 
   const params = await searchParams;
   const q = params.q?.trim() || "";
@@ -42,8 +42,14 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
   const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
   const pageSize = 12;
 
-  // Build where clause
-  const where: Prisma.EmployeeWhereInput = {};
+  // Build where clause (strictement isolé par université)
+  const orgFilter = currentUser.roleCode === "SUPER_ADMIN" && !currentUser.organizationId
+    ? {}
+    : { organizationId: currentUser.organizationId };
+
+  const where: Prisma.EmployeeWhereInput = {
+    ...orgFilter,
+  };
 
   if (statusFilter && ["ACTIVE", "INACTIVE", "SUSPENDED"].includes(statusFilter)) {
     where.status = statusFilter;
@@ -74,6 +80,7 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
       },
     }),
     prisma.organizationUnit.findMany({
+      where: orgFilter,
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
@@ -241,7 +248,7 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
                       </div>
                       {emp.nationalId && (
                         <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                          رقم الهوية: {emp.nationalId}
+                          NIN: {emp.nationalId}
                         </div>
                       )}
                     </td>

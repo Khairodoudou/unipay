@@ -34,9 +34,9 @@ export function getGeminiClient(): GoogleGenAI {
  * prend le relais pour garantir la disponibilité continue du système d'audit.
  */
 export const PREFERRED_GEMINI_MODELS = [
-  "gemini-3.8-flash",
-  "gemini-3.5-flash",
   "gemini-3.5-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-3.8-flash",
   "gemini-flash-latest",
 ] as const;
 

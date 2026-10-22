@@ -28,9 +28,14 @@ function getLast24hDate() {
 }
 
 export default async function AdminDashboardPage() {
-  await requireRole("ADMIN");
+  const currentUser = await requireRole(["ADMIN", "SUPER_ADMIN"]);
 
-  // 1. Métriques globales réelles depuis Prisma
+  // Filtre tenant : pour un ADMIN local, les statistiques sont strictement limitées à sa propre université
+  const orgFilter = currentUser.roleCode === "SUPER_ADMIN" && !currentUser.organizationId
+    ? {}
+    : { organizationId: currentUser.organizationId };
+
+  // 1. Métriques réelles depuis Prisma
   const since24h = getLast24hDate();
   const [
     totalUsers,
@@ -44,12 +49,12 @@ export default async function AdminDashboardPage() {
     failedLogins24h,
     inactiveRulesCount,
   ] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { isActive: true } }),
-    prisma.user.count({ where: { isActive: false } }),
+    prisma.user.count({ where: orgFilter }),
+    prisma.user.count({ where: { ...orgFilter, isActive: true } }),
+    prisma.user.count({ where: { ...orgFilter, isActive: false } }),
     prisma.role.count(),
     prisma.permission.count(),
-    prisma.auditLog.count(),
+    prisma.auditLog.count({ where: orgFilter }),
     prisma.role.findMany({
       include: {
         _count: {
@@ -59,6 +64,7 @@ export default async function AdminDashboardPage() {
       orderBy: { createdAt: "asc" },
     }),
     prisma.auditLog.findMany({
+      where: orgFilter,
       take: 7,
       orderBy: { createdAt: "desc" },
       include: {
@@ -69,6 +75,7 @@ export default async function AdminDashboardPage() {
     }),
     prisma.auditLog.count({
       where: {
+        ...orgFilter,
         action: "LOGIN_FAILED",
         createdAt: { gte: since24h },
       },

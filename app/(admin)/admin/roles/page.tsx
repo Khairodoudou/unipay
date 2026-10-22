@@ -10,13 +10,14 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminRolesPage() {
-  await requireRole("ADMIN");
+  const user = await requireRole(["ADMIN", "SUPER_ADMIN"]);
 
   const roles = await prisma.role.findMany({
+    where: user.roleCode === "SUPER_ADMIN" ? undefined : { code: { not: "SUPER_ADMIN" } },
     include: {
       _count: {
         select: {
-          users: true,
+          users: user.organizationId ? { where: { organizationId: user.organizationId } } : true,
           rolePermissions: true,
         },
       },

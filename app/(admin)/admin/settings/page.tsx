@@ -10,16 +10,38 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminSettingsPage() {
-  await requireRole("ADMIN");
+  const user = await requireRole(["ADMIN", "SUPER_ADMIN"]);
 
-  const settingsList = await prisma.systemSetting.findMany();
-  const settingsMap = settingsList.reduce<Record<string, (typeof settingsList)[0]>>(
-    (acc, s) => {
-      acc[s.key] = s;
-      return acc;
-    },
-    {}
-  );
+  const [systemSettings, universitySettings] = await Promise.all([
+    prisma.systemSetting.findMany(),
+    user.organizationId
+      ? prisma.universitySetting.findMany({ where: { organizationId: user.organizationId } })
+      : [],
+  ]);
+
+  const settingsMap = systemSettings.reduce<
+    Record<string, { key: string; value: string; category: string; labelAr: string; descriptionAr: string | null }>
+  >((acc, s) => {
+    acc[s.key] = s;
+    return acc;
+  }, {});
+
+  for (const uSetting of universitySettings) {
+    if (settingsMap[uSetting.key]) {
+      settingsMap[uSetting.key] = {
+        ...settingsMap[uSetting.key],
+        value: uSetting.value,
+      };
+    } else {
+      settingsMap[uSetting.key] = {
+        key: uSetting.key,
+        value: uSetting.value,
+        category: uSetting.category,
+        labelAr: uSetting.key,
+        descriptionAr: uSetting.descriptionAr,
+      };
+    }
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">

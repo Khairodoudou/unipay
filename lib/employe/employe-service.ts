@@ -115,8 +115,15 @@ export async function getAuthenticatedEmployee(customUser?: UserSessionData) {
 
   // Si toujours non relié, tenter une résolution de secours par email si employé actif
   if (!employeeId && user.email) {
+    const trimmedEmail = user.email.trim();
     const matchedEmployee = await prisma.employee.findFirst({
-      where: { email: user.email, status: "ACTIVE" },
+      where: {
+        OR: [
+          { email: trimmedEmail },
+          { email: trimmedEmail.toLowerCase() },
+        ],
+        status: "ACTIVE",
+      },
       select: { id: true },
     });
     if (matchedEmployee) {
@@ -180,6 +187,18 @@ export async function getEmployeeProfile(customUser?: UserSessionData): Promise<
 }
 
 /**
+ * Statuts des lots officiellement publiés à l'espace employé.
+ * Une fois le visa financier accordé (AUTHORIZED), le bulletin est disponible pour l'employé,
+ * y compris pendant le virement (PAYMENT_PROCESSING), une fois payé (PAID) et clôturé (CLOSED).
+ */
+export const PUBLISHED_PAYSLIP_STATUSES = [
+  "AUTHORIZED",
+  "PAYMENT_PROCESSING",
+  "PAID",
+  "CLOSED",
+];
+
+/**
  * Récupère les statistiques synthétiques pour le dashboard employé.
  */
 export async function getEmployeeDashboardStats(customUser?: UserSessionData) {
@@ -189,7 +208,7 @@ export async function getEmployeeDashboardStats(customUser?: UserSessionData) {
   const totalPayslipsCount = await prisma.payrollRecord.count({
     where: {
       employeeId: employee.id,
-      batch: { status: "AUTHORIZED" },
+      batch: { status: { in: PUBLISHED_PAYSLIP_STATUSES } },
     },
   });
 
@@ -197,7 +216,7 @@ export async function getEmployeeDashboardStats(customUser?: UserSessionData) {
   const latestRecord = await prisma.payrollRecord.findFirst({
     where: {
       employeeId: employee.id,
-      batch: { status: "AUTHORIZED" },
+      batch: { status: { in: PUBLISHED_PAYSLIP_STATUSES } },
     },
     include: {
       batch: {
@@ -259,7 +278,7 @@ export async function getEmployeePayslips(
     where: {
       employeeId: employee.id,
       batch: {
-        status: "AUTHORIZED", // Publication condition
+        status: { in: PUBLISHED_PAYSLIP_STATUSES }, // Publication condition
         ...(options?.year ? { period: { year: options.year } } : {}),
         ...(options?.month ? { period: { month: options.month } } : {}),
       },
@@ -311,7 +330,7 @@ export async function getEmployeePayslips(
 /**
  * Récupère le détail complet d'un bulletin autorisé pour l'employé connecté.
  * RÈGLE D'OWNERSHIP STRICTE :
- * Si le record n'existe pas, n'appartient pas à l'employé ou n'est pas AUTHORIZED, retourne null.
+ * Si le record n'existe pas, n'appartient pas à l'employé ou n'est pas publié, retourne null.
  */
 export async function getEmployeePayslipDetail(
   recordId: string,
@@ -345,8 +364,8 @@ export async function getEmployeePayslipDetail(
     return null;
   }
 
-  // CONTRÔLE DE PUBLICATION STRICT : AUTHORIZED UNIQUEMENT
-  if (record.batch.status !== "AUTHORIZED") {
+  // CONTRÔLE DE PUBLICATION STRICT : AUTHORIZED / PAID / CLOSED
+  if (!PUBLISHED_PAYSLIP_STATUSES.includes(record.batch.status)) {
     return null;
   }
 
@@ -426,7 +445,7 @@ export async function getAvailablePayslipYears(customUser?: UserSessionData): Pr
   const periods = await prisma.payrollRecord.findMany({
     where: {
       employeeId: employee.id,
-      batch: { status: "AUTHORIZED" },
+      batch: { status: { in: PUBLISHED_PAYSLIP_STATUSES } },
     },
     select: {
       batch: {

@@ -114,6 +114,7 @@ model PayrollBatch {
   calculatedAt   DateTime?
   // Périmètre organisationnel — hérité du créateur du batch
   organizationId String?       // nullable pour compatibilité rétroactive
+  organization   Organization? @relation(fields: [organizationId], references: [id])
   submittedBy    String?       // userId qui a soumis au workflow
   submittedAt    DateTime?
   createdBy      String?
@@ -235,22 +236,29 @@ model PayrollLineItem {
 }
 
 model Organization {
-  id          String   @id @default(cuid())
-  name        String
-  code        String   @unique
-  address     String?
-  wilaya      String?
-  phone       String?
-  email       String?
-  website     String?
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  code            String   @unique
+  status          String   @default("ACTIVE") // PENDING, ACTIVE, SUSPENDED, ARCHIVED
+  address         String?
+  wilaya          String?
+  phone           String?
+  email           String?
+  website         String?
+  description     String?
+  isActive        Boolean  @default(true)
+  suspendedAt     DateTime?
+  suspendedReason String?
+  archivedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  users     User[]
-  units     OrganizationUnit[]
-  employees Employee[]
+  users              User[]
+  units              OrganizationUnit[]
+  employees          Employee[]
+  batches            PayrollBatch[]
+  auditLogs          AuditLog[]
+  universitySettings UniversitySetting[]
 
   @@map("organizations")
 }
@@ -274,6 +282,23 @@ model OrganizationUnit {
   @@index([organizationId])
   @@index([parentId])
   @@map("organization_units")
+}
+
+model UniversitySetting {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  key            String
+  value          String
+  category       String       @default("GENERAL") // GENERAL, PAYROLL, INTERFACE, NOTIFICATION
+  labelAr        String
+  descriptionAr  String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, key])
+  @@index([organizationId])
+  @@map("university_settings")
 }
 
 model SystemSetting {
@@ -370,10 +395,10 @@ model User {
   firstName      String
   lastName       String
   roleId         String
-  role           Role         @relation(fields: [roleId], references: [id])
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  isActive       Boolean      @default(true)
+  role           Role          @relation(fields: [roleId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  isActive       Boolean       @default(true)
   lastLoginAt    DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -407,19 +432,22 @@ model Session {
 }
 
 model AuditLog {
-  id           String   @id @default(cuid())
-  userId       String?
-  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action       String // LOGIN_SUCCESS, LOGIN_FAILED, LOGOUT, SESSION_REVOKED
-  resourceType String?
-  resourceId   String?
-  details      String? // JSON metadata / descriptions
-  ipAddress    String?
-  userAgent    String?
-  createdAt    DateTime @default(now())
+  id             String        @id @default(cuid())
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  action         String // LOGIN_SUCCESS, LOGIN_FAILED, LOGOUT, SESSION_REVOKED
+  resourceType   String?
+  resourceId     String?
+  details        String? // JSON metadata / descriptions
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime      @default(now())
 
   @@index([action])
   @@index([createdAt])
+  @@index([organizationId])
   @@map("audit_logs")
 }
 

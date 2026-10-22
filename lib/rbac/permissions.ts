@@ -76,6 +76,18 @@ export const INITIAL_PERMISSIONS: PermissionDefinition[] = [
 ];
 
 export const ROLE_DEFAULT_PERMISSIONS: Record<RoleCode, string[]> = {
+  SUPER_ADMIN: [
+    "superadmin.access",
+    "universities.read",
+    "universities.create",
+    "universities.update",
+    "universities.suspend",
+    "universities.archive",
+    "superadmin.audit.read",
+    "superadmin.settings.update",
+    "superadmin.rules.manage",
+  ],
+
   ADMIN: [
     "admin.access",
     "users.read",

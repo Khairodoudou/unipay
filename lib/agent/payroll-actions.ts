@@ -197,11 +197,27 @@ export async function addEmployeesToBatchAction(
 
     const batch = await prisma.payrollBatch.findUnique({ where: { id: batchId } });
     if (!batch) return { success: false, error: "الدفعة غير موجودة." };
+    if (caller.roleCode !== "SUPER_ADMIN" && batch.organizationId && batch.organizationId !== caller.organizationId) {
+      return { success: false, error: "غير مصرح لك بتعديل دفعة أجور تابعة لمؤسسة أخرى." };
+    }
     if (batch.status === "RETURNED_FOR_CORRECTION") {
       return { success: false, error: "الدفعة معادة للتصحيح ومجمدة. يرجى إنشاء نسخة جديدة (Version) للتعديل." };
     }
     if (batch.status !== "DRAFT") {
       return { success: false, error: "لا يمكن تعديل الدفعة في حالتها الحالية." };
+    }
+
+    // Contrôle d'isolation stricte : interdire d'ajouter des employés d'une autre université
+    if (batch.organizationId) {
+      const foreignEmps = await prisma.employee.count({
+        where: {
+          id: { in: employeeIds },
+          organizationId: { not: batch.organizationId },
+        },
+      });
+      if (foreignEmps > 0) {
+        return { success: false, error: "عملية مرفوضة: لا يمكن إضافة موظفين يتبعون لجامعة أخرى إلى هذه الدفعة." };
+      }
     }
 
     let added = 0;
@@ -221,6 +237,7 @@ export async function addEmployeesToBatchAction(
 
     await recordAuditLog({
       userId: caller.id,
+      organizationId: batch.organizationId || caller.organizationId || null,
       action: "PAYROLL_BATCH_EMPLOYEES_UPDATED",
       resourceType: "PAYROLL_BATCH",
       resourceId: batchId,
@@ -239,10 +256,13 @@ export async function removeEmployeeFromBatchAction(
   employeeId: string
 ): Promise<ActionResult> {
   try {
-    await verifyAgentCaller();
+    const caller = await verifyAgentCaller();
 
     const batch = await prisma.payrollBatch.findUnique({ where: { id: batchId } });
     if (!batch) return { success: false, error: "الدفعة غير موجودة." };
+    if (caller.roleCode !== "SUPER_ADMIN" && batch.organizationId && batch.organizationId !== caller.organizationId) {
+      return { success: false, error: "غير مصرح لك بتعديل دفعة أجور تابعة لمؤسسة أخرى." };
+    }
     if (batch.status === "RETURNED_FOR_CORRECTION") {
       return { success: false, error: "الدفعة معادة للتصحيح ومجمدة. يرجى إنشاء نسخة جديدة (Version) للتعديل." };
     }

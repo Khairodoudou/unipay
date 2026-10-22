@@ -27,7 +27,7 @@ export async function updateSystemSettingsAction(
 ): Promise<ActionResult> {
   try {
     const caller = await getCurrentUser();
-    if (!caller || !caller.isActive || caller.roleCode !== "ADMIN") {
+    if (!caller || !caller.isActive || (caller.roleCode !== "ADMIN" && caller.roleCode !== "SUPER_ADMIN")) {
       return { success: false, error: "غير مصرح لك بتعديل إعدادات النظام." };
     }
 
@@ -58,16 +58,39 @@ export async function updateSystemSettingsAction(
           }
         }
 
-        await prisma.systemSetting.upsert({
-          where: { key },
-          update: { value: val },
-          create: {
-            key,
-            value: val,
-            category: key.startsWith("SESSION") || key.startsWith("PASSWORD") ? "SECURITY" : "GENERAL",
-            labelAr: key,
-          },
-        });
+        const category = key.startsWith("SESSION") || key.startsWith("PASSWORD") ? "SECURITY" : "GENERAL";
+
+        if (caller.organizationId) {
+          // Isolation multi-tenant : sauvegarde au niveau de la table UniversitySetting
+          await prisma.universitySetting.upsert({
+            where: {
+              organizationId_key: {
+                organizationId: caller.organizationId,
+                key,
+              },
+            },
+            update: { value: val, category },
+            create: {
+              organizationId: caller.organizationId,
+              key,
+              value: val,
+              category,
+              labelAr: key,
+            },
+          });
+        } else {
+          // Sauvegarde globale de la plateforme (Super Admin)
+          await prisma.systemSetting.upsert({
+            where: { key },
+            update: { value: val },
+            create: {
+              key,
+              value: val,
+              category,
+              labelAr: key,
+            },
+          });
+        }
         modifiedKeys.push(key);
       }
     }
@@ -75,10 +98,12 @@ export async function updateSystemSettingsAction(
     // Journalisation d'audit
     await recordAuditLog({
       userId: caller.id,
+      organizationId: caller.organizationId || null,
       action: "SETTINGS_UPDATED",
       resourceType: "SYSTEM_SETTINGS",
       details: {
         modifiedKeys,
+        scope: caller.organizationId ? "UNIVERSITY_SETTINGS" : "GLOBAL_SETTINGS",
       },
     });
 

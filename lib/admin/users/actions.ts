@@ -31,7 +31,7 @@ async function verifyAdminCaller(requiredPermission?: string) {
   if (!caller.isActive) {
     throw new Error("هذا الحساب معطّل ولا يمكنه تنفيذ أي عملية.");
   }
-  if (caller.roleCode !== "ADMIN") {
+  if (caller.roleCode !== "ADMIN" && caller.roleCode !== "SUPER_ADMIN") {
     throw new Error("غير مصرح لك بتنفيذ هذه العملية الإدارية.");
   }
   if (requiredPermission && !caller.permissions.includes(requiredPermission)) {
@@ -80,16 +80,30 @@ export async function createUserAction(
       };
     }
 
+    // Règle d'isolation : pour un ADMIN local, l'utilisateur est STRICTEMENT créé dans sa propre université
+    const effectiveOrgId = caller.roleCode === "SUPER_ADMIN"
+      ? (organizationId || null)
+      : caller.organizationId;
+
+    if (caller.roleCode !== "SUPER_ADMIN" && !effectiveOrgId) {
+      return { success: false, error: "المؤسسة الجامعية للمستخدم مطلوبة." };
+    }
+
     // Vérifier l'existence du rôle et de l'organisation
     const [role, org] = await Promise.all([
       prisma.role.findUnique({ where: { id: roleId }, select: { id: true, code: true, nameAr: true } }),
-      prisma.organization.findUnique({ where: { id: organizationId }, select: { id: true, name: true } }),
+      effectiveOrgId ? prisma.organization.findUnique({ where: { id: effectiveOrgId }, select: { id: true, name: true } }) : null,
     ]);
 
     if (!role) {
       return { success: false, error: "الدور الوظيفي المحدد غير موجود." };
     }
-    if (!org) {
+
+    if (role.code === "SUPER_ADMIN" && caller.roleCode !== "SUPER_ADMIN") {
+      return { success: false, error: "لا يمكن تعيين دور مدير وطني عام إلا بواسطة مدير وطني عام." };
+    }
+
+    if (effectiveOrgId && !org) {
       return { success: false, error: "المؤسسة المحددة غير موجودة." };
     }
 
@@ -103,7 +117,7 @@ export async function createUserAction(
         firstName,
         lastName,
         roleId,
-        organizationId,
+        organizationId: effectiveOrgId,
         isActive,
       },
       select: {
@@ -125,7 +139,7 @@ export async function createUserAction(
         targetEmail: newUser.email,
         targetName: `${newUser.firstName} ${newUser.lastName}`,
         roleCode: role.code,
-        organizationName: org.name,
+        organizationName: org?.name || "المنصة المركزية الوطنية",
         isActive: newUser.isActive,
       },
     });
@@ -183,6 +197,11 @@ export async function updateUserAction(
       return { success: false, error: "المستخدم المراد تعديله غير موجود." };
     }
 
+    // Contrôle d'isolation de tenant
+    if (caller.roleCode !== "SUPER_ADMIN" && targetUser.organizationId !== caller.organizationId) {
+      return { success: false, error: "عملية مرفوضة: لا تملك صلاحية تعديل مستخدم تابع لجامعة أخرى." };
+    }
+
     // Vérifier l'unicité de l'email si modifié
     if (email !== targetUser.email) {
       const emailOccupied = await prisma.user.findUnique({
@@ -202,7 +221,11 @@ export async function updateUserAction(
       return { success: false, error: "الدور الوظيفي المحدد غير موجود." };
     }
 
-    // RÈGLE CRITIQUE : Protection du dernier ADMIN actif
+    if (newRole.code === "SUPER_ADMIN" && caller.roleCode !== "SUPER_ADMIN") {
+      return { success: false, error: "لا يمكن ترقية مستخدم لدور مدير وطني عام إلا بواسطة مدير وطني عام." };
+    }
+
+    // RÈGLE CRITIQUE : Protection du dernier ADMIN actif par université
     const isCurrentlyActiveAdmin =
       targetUser.role.code === "ADMIN" && targetUser.isActive;
     const willRemainActiveAdmin =
@@ -213,6 +236,7 @@ export async function updateUserAction(
         where: {
           role: { code: "ADMIN" },
           isActive: true,
+          organizationId: targetUser.organizationId,
         },
       });
 
@@ -220,10 +244,14 @@ export async function updateUserAction(
         return {
           success: false,
           error:
-            "عملية مرفوضة: لا يمكن تغيير دور أو تعطيل آخر مدير نظام نشط. يجب أن يظل مدير نشط واحد على الأقل لضمان استمرارية الإدارة.",
+            "عملية مرفوضة: لا يمكن تغيير دور أو تعطيل آخر مدير نشط لهذه الجامعة لضمان استمرارية الإدارة.",
         };
       }
     }
+
+    const effectiveOrgId = caller.roleCode === "SUPER_ADMIN"
+      ? (organizationId || null)
+      : targetUser.organizationId;
 
     // Mise à jour en base de données
     const updatedUser = await prisma.user.update({
@@ -233,7 +261,7 @@ export async function updateUserAction(
         lastName,
         email,
         roleId,
-        organizationId,
+        organizationId: effectiveOrgId,
         isActive,
       },
       include: {
@@ -296,12 +324,18 @@ export async function toggleUserStatusAction(
       return { success: false, error: "المستخدم غير موجود." };
     }
 
-    // RÈGLE CRITIQUE : Protection du dernier ADMIN actif
+    // Contrôle d'isolation de tenant
+    if (caller.roleCode !== "SUPER_ADMIN" && targetUser.organizationId !== caller.organizationId) {
+      return { success: false, error: "عملية مرفوضة: لا تملك صلاحية تعديل مستخدم تابع لجامعة أخرى." };
+    }
+
+    // RÈGLE CRITIQUE : Protection du dernier ADMIN actif au niveau de l'université
     if (targetUser.role.code === "ADMIN" && !targetStatus) {
       const activeAdminCount = await prisma.user.count({
         where: {
           role: { code: "ADMIN" },
           isActive: true,
+          organizationId: targetUser.organizationId,
         },
       });
 
@@ -309,7 +343,7 @@ export async function toggleUserStatusAction(
         return {
           success: false,
           error:
-            "عملية مرفوضة: لا يمكن تعطيل آخر مدير نظام نشط. يجب أن يتوفر مدير نشط واحد على الأقل.",
+            "عملية مرفوضة: لا يمكن تعطيل آخر مدير نظام نشط لهذه الجامعة لضمان استمرارية الإدارة.",
         };
       }
     }
@@ -375,11 +409,15 @@ export async function resetUserPasswordAction(
 
     const targetUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true },
+      select: { id: true, email: true, organizationId: true },
     });
 
     if (!targetUser) {
       return { success: false, error: "المستخدم غير موجود." };
+    }
+
+    if (caller.roleCode !== "SUPER_ADMIN" && targetUser.organizationId !== caller.organizationId) {
+      return { success: false, error: "غير مصرح لك بتعيين كلمة مرور مستخدم في مؤسسة أخرى." };
     }
 
     const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
@@ -447,12 +485,18 @@ export async function deleteUserAction(
       return { success: false, error: "المستخدم غير موجود أو تم حذفه مسبقاً." };
     }
 
-    // Protection 2 : Protection du dernier ADMIN actif
+    // Contrôle d'isolation de tenant
+    if (caller.roleCode !== "SUPER_ADMIN" && targetUser.organizationId !== caller.organizationId) {
+      return { success: false, error: "عملية مرفوضة: لا يمكنك حذف مستخدم تابع لجامعة أخرى." };
+    }
+
+    // Protection 2 : Protection du dernier ADMIN actif par université
     if (targetUser.role.code === "ADMIN" && targetUser.isActive) {
       const activeAdminCount = await prisma.user.count({
         where: {
           role: { code: "ADMIN" },
           isActive: true,
+          organizationId: targetUser.organizationId,
         },
       });
 
@@ -460,7 +504,7 @@ export async function deleteUserAction(
         return {
           success: false,
           error:
-            "عملية مرفوضة: لا يمكن حذف آخر مدير نظام نشط. يجب أن يظل مدير نشط واحد على الأقل لضمان استمرارية الإدارة.",
+            "عملية مرفوضة: لا يمكن حذف آخر مدير نشط لهذه الجامعة لضمان استمرارية الإدارة.",
         };
       }
     }

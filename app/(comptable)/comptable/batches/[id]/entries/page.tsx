@@ -79,7 +79,16 @@ export default async function ComptableEntriesPage({
   return (
     <div className="space-y-6">
       <BatchReviewHeader
-        batch={batch}
+        batch={{
+          id: batch.id,
+          versionNumber: batch.versionNumber ?? 1,
+          label: batch.label,
+          status: batch.status,
+          period: batch.period,
+          totalGross: batch.records.reduce((s, r) => s + Number(r.grossAmount ?? 0), 0),
+          totalNet: batch.records.reduce((s, r) => s + Number(r.netAmount ?? 0), 0),
+          totalDeductions: batch.records.reduce((s, r) => s + Number(r.totalDeductions ?? 0), 0),
+        }}
         backHref={`/comptable/batches/${batch.id}`}
         backLabel="العودة لصفحة المراجعة"
         subtitle="جدول القيود المحاسبية وفق النظام المحاسبي المالي الجزائري (SCF)"

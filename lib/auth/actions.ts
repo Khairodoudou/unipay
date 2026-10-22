@@ -128,10 +128,11 @@ export async function loginAction(
   // 8. Journalisation de l'audit de succès
   await recordAuditLog({
     userId: user.id,
+    organizationId: user.organizationId || null,
     action: "LOGIN_SUCCESS",
     details: {
       role: user.role.code,
-      organization: user.organization.name,
+      organization: user.organization?.name || "المنصة المركزية الوطنية",
     },
     ipAddress,
     userAgent,

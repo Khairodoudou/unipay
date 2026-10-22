@@ -33,8 +33,10 @@ export default async function AdminUsersPage({ searchParams }: UsersPageProps) {
   const status = params.status?.trim();
   const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
 
-  // Construction dynamique du filtre Prisma
-  const where: Prisma.UserWhereInput = {};
+  // Construction dynamique du filtre Prisma (strictement isolé par université)
+  const where: Prisma.UserWhereInput = {
+    organizationId: currentUser.organizationId,
+  };
 
   if (search) {
     where.OR = [

@@ -34,10 +34,10 @@ interface UserItem {
     code: string;
     nameAr: string;
   };
-  organization: {
+  organization?: {
     id: string;
     name: string;
-  };
+  } | null;
 }
 
 interface UsersTableProps {
@@ -203,7 +203,7 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
 
                       <td className="py-3.5 px-4">
                         <span className="text-slate-600 font-medium">
-                          {user.organization.name}
+                          {user.organization?.name || "المنصة المركزية الوطنية"}
                         </span>
                       </td>
 
@@ -387,7 +387,7 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
               <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
                 <span className="text-slate-500">الدور والمؤسسة:</span>
                 <span className="font-semibold text-slate-800">
-                  {userToDelete.role.nameAr} • {userToDelete.organization.name}
+                  {userToDelete.role.nameAr} • {userToDelete.organization?.name || "المنصة المركزية الوطنية"}
                 </span>
               </div>
             </div>

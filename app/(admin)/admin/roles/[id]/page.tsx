@@ -23,8 +23,21 @@ interface RoleDetailPageProps {
 }
 
 export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
-  await requireRole("ADMIN");
+  const user = await requireRole(["ADMIN", "SUPER_ADMIN"]);
   const { id } = await params;
+
+  const usersWhere = user.roleCode !== "SUPER_ADMIN" && user.organizationId
+    ? { organizationId: user.organizationId }
+    : undefined;
+
+  const permissionsWhere = user.roleCode !== "SUPER_ADMIN"
+    ? {
+        AND: [
+          { code: { not: { startsWith: "superadmin." } } },
+          { code: { not: { startsWith: "universities." } } },
+        ],
+      }
+    : undefined;
 
   const [role, allPermissions] = await Promise.all([
     prisma.role.findUnique({
@@ -36,6 +49,7 @@ export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
           },
         },
         users: {
+          where: usersWhere,
           select: {
             id: true,
             email: true,
@@ -49,6 +63,7 @@ export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
       },
     }),
     prisma.permission.findMany({
+      where: permissionsWhere,
       orderBy: { code: "asc" },
       select: {
         id: true,
@@ -60,6 +75,11 @@ export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
   ]);
 
   if (!role) {
+    notFound();
+  }
+
+  // Protection hiérarchique : un administrateur local ne peut pas inspecter ou modifier le rôle SUPER_ADMIN
+  if (user.roleCode !== "SUPER_ADMIN" && role.code === "SUPER_ADMIN") {
     notFound();
   }
 
@@ -169,7 +189,7 @@ export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
                     {u.email}
                   </span>
                   <span className="text-[10px] text-slate-500 block mt-0.5">
-                    {u.organization.name}
+                    {u.organization?.name || "المنصة المركزية الوطنية"}
                   </span>
                 </div>
 

@@ -11,20 +11,39 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminOrganizationPage() {
-  await requireRole("ADMIN");
+  const user = await requireRole(["ADMIN", "SUPER_ADMIN"]);
 
-  // Récupérer l'organisation principale
-  let organization = await prisma.organization.findFirst({
-    include: {
-      units: {
+  // Récupérer l'organisation liée au compte de l'administrateur
+  const targetOrgId = user.organizationId;
+  let organization = targetOrgId
+    ? await prisma.organization.findUnique({
+        where: { id: targetOrgId },
         include: {
-          parent: { select: { name: true } },
-          children: { select: { id: true, name: true } },
+          units: {
+            include: {
+              parent: { select: { name: true } },
+              children: { select: { id: true, name: true } },
+            },
+            orderBy: { createdAt: "asc" },
+          },
         },
-        orderBy: { createdAt: "asc" },
+      })
+    : null;
+
+  // Fallback pour SUPER_ADMIN sans organisation assignée
+  if (!organization) {
+    organization = await prisma.organization.findFirst({
+      include: {
+        units: {
+          include: {
+            parent: { select: { name: true } },
+            children: { select: { id: true, name: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
       },
-    },
-  });
+    });
+  }
 
   // Si inexistante par sécurité
   if (!organization) {

@@ -3,6 +3,9 @@
 /**
  * components/workflow/BatchReviewHeader.tsx
  * En-tête institutionnel pour la revue d'un lot de paie dans les espaces décisionnels.
+ *
+ * Accepte les totaux comme plain numbers (totalGross, totalNet, totalDeductions)
+ * pour éviter le passage de Decimal Prisma depuis les Server Components.
  */
 
 import Link from "next/link";
@@ -21,11 +24,11 @@ interface BatchReviewHeaderProps {
       label?: string;
       status?: string;
     };
-    records?: Array<{
-      grossAmount?: number | string | { toString(): string };
-      netAmount?: number | string | { toString(): string };
-      totalDeductions?: number | string | { toString(): string };
-    }>;
+    /** Pre-aggregated totals as plain numbers — compute these in the Server Component */
+    totalGross?: number;
+    totalNet?: number;
+    totalDeductions?: number;
+    employeeCount?: number;
     _count?: {
       employees?: number;
       records?: number;
@@ -38,7 +41,7 @@ interface BatchReviewHeaderProps {
 
 const MONTH_NAMES_AR = [
   "جانفي", "فيفري", "مارس", "أفريل", "ماي", "جوان",
-  "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
+  "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
 ];
 
 function formatCurrency(amount: number): string {
@@ -55,15 +58,17 @@ export function BatchReviewHeader({
   backLabel = "العودة للقائمة",
   subtitle,
 }: BatchReviewHeaderProps) {
-  const periodLabel = batch.period.label || `${MONTH_NAMES_AR[batch.period.month - 1] || batch.period.month} ${batch.period.year}`;
+  const periodLabel =
+    batch.period.label ||
+    `${MONTH_NAMES_AR[batch.period.month - 1] || batch.period.month} ${batch.period.year}`;
   const versionNum = batch.versionNumber ?? 1;
   const batchDisplay = batch.label || `دفعة ${periodLabel} (v${versionNum})`;
 
-  const records = batch.records || [];
-  const totalEmployees = batch._count?.employees || records.length;
-  const totalGross = records.reduce((acc, r) => acc + Number(r.grossAmount || 0), 0);
-  const totalNet = records.reduce((acc, r) => acc + Number(r.netAmount || 0), 0);
-  const totalDeductions = records.reduce((acc, r) => acc + Number(r.totalDeductions || 0), 0);
+  const totalEmployees =
+    batch.employeeCount ?? batch._count?.employees ?? 0;
+  const totalGross = batch.totalGross ?? 0;
+  const totalNet = batch.totalNet ?? 0;
+  const totalDeductions = batch.totalDeductions ?? (totalGross - totalNet);
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-6 mb-6">

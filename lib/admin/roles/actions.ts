@@ -35,7 +35,7 @@ export async function updateRolePermissionsAction(
 ): Promise<ActionResult> {
   try {
     const caller = await getCurrentUser();
-    if (!caller || !caller.isActive || caller.roleCode !== "ADMIN") {
+    if (!caller || !caller.isActive || (caller.roleCode !== "ADMIN" && caller.roleCode !== "SUPER_ADMIN")) {
       return { success: false, error: "غير مصرح لك بتعديل صلاحيات الأدوار." };
     }
     if (!caller.permissions.includes("roles.update")) {
@@ -53,6 +53,21 @@ export async function updateRolePermissionsAction(
 
     if (!role) {
       return { success: false, error: "الدور المحدد غير موجود." };
+    }
+
+    // Protection hiérarchique : seul un SUPER_ADMIN peut modifier le rôle SUPER_ADMIN
+    if (role.code === "SUPER_ADMIN" && caller.roleCode !== "SUPER_ADMIN") {
+      return { success: false, error: "لا يمكن تعديل صلاحيات المدير الوطني العام إلا من قبله." };
+    }
+
+    // Protection anti-élévation de privilèges : un ADMIN local ne peut pas attribuer de permissions centrales
+    if (caller.roleCode !== "SUPER_ADMIN") {
+      const hasCentralPermissions = permissionCodes.some(
+        (code) => code.startsWith("superadmin.") || code.startsWith("universities.")
+      );
+      if (hasCentralPermissions) {
+        return { success: false, error: "لا يمكنك منح صلاحيات الإدارة المركزية الوطنية." };
+      }
     }
 
     // Protection critique : Interdiction de retirer les permissions vitales de l'ADMIN

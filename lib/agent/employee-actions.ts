@@ -23,7 +23,7 @@ async function verifyAgentCaller() {
   if (!caller || !caller.isActive) {
     throw new Error("غير مصرح لك بتنفيذ هذه العملية.");
   }
-  const allowed = ["ADMIN", "AGENT_RH"];
+  const allowed = ["ADMIN", "AGENT_RH", "SUPER_ADMIN"];
   if (!allowed.includes(caller.roleCode)) {
     throw new Error("هذه العملية مخصصة لعون الموارد البشرية فقط.");
   }
@@ -77,6 +77,15 @@ export async function createEmployeeAction(
       return { success: false, error: `الرقم الوظيفي "${data.matricule}" مستخدم بالفعل.` };
     }
 
+    // Règle d'isolation : l'employé est rattaché à l'université de l'agent
+    const effectiveOrgId = caller.roleCode === "SUPER_ADMIN"
+      ? (data.organizationId || caller.organizationId)
+      : caller.organizationId;
+
+    if (!effectiveOrgId) {
+      return { success: false, error: "المؤسسة الجامعية مطلوبة لإنشاء الموظف." };
+    }
+
     const employee = await prisma.employee.create({
       data: {
         matricule: data.matricule,
@@ -97,7 +106,7 @@ export async function createEmployeeAction(
         phone: data.phone || null,
         email: data.email || null,
         address: data.address || null,
-        organizationId: data.organizationId,
+        organizationId: effectiveOrgId,
         organizationUnitId: data.organizationUnitId || null,
         createdBy: caller.id,
       },
@@ -164,6 +173,10 @@ export async function updateEmployeeAction(
 
     const existing = await prisma.employee.findUnique({ where: { id: employeeId } });
     if (!existing) return { success: false, error: "الموظف غير موجود." };
+
+    if (caller.roleCode !== "SUPER_ADMIN" && existing.organizationId !== caller.organizationId) {
+      return { success: false, error: "عملية مرفوضة: لا تملك صلاحية تعديل موظف تابع لجامعة أخرى." };
+    }
 
     const data = parsed.data;
     const reason = data.reason || "تعديل بواسطة عون الموارد البشرية";
@@ -272,9 +285,13 @@ export async function changeEmployeeStatusAction(
     const { employeeId, status, reason } = parsed.data;
     const existing = await prisma.employee.findUnique({
       where: { id: employeeId },
-      select: { id: true, status: true, matricule: true },
+      select: { id: true, status: true, matricule: true, organizationId: true },
     });
     if (!existing) return { success: false, error: "الموظف غير موجود." };
+
+    if (caller.roleCode !== "SUPER_ADMIN" && existing.organizationId !== caller.organizationId) {
+      return { success: false, error: "عملية مرفوضة: لا تملك صلاحية تعديل حالة موظف تابع لجامعة أخرى." };
+    }
 
     await prisma.$transaction(async (tx) => {
       await tx.employee.update({ where: { id: employeeId }, data: { status } });
@@ -320,12 +337,18 @@ export interface ImportEmployeeRow {
   matricule: string;
   firstName: string;
   lastName: string;
+  nationalId?: string;
+  dateOfBirth?: string;
+  gender?: string;
   grade?: string;
   position?: string;
   category?: string;
   baseSalary: string;
+  index?: string;
   rib?: string;
   bankName?: string;
+  email?: string;
+  phone?: string;
   recruitmentDate?: string;
 }
 
@@ -410,12 +433,18 @@ export async function importEmployeesAction(
             matricule: row.matricule.toUpperCase(),
             firstName: row.firstName.trim(),
             lastName: row.lastName.trim(),
+            nationalId: row.nationalId?.trim() || null,
+            dateOfBirth: row.dateOfBirth ? new Date(row.dateOfBirth) : null,
+            gender: row.gender?.trim() || null,
             grade: row.grade?.trim() || null,
             position: row.position?.trim() || null,
             category: (row.category?.toUpperCase() as "PERMANENT" | "CONTRACTUEL" | "VACATAIRE") || null,
             baseSalary: parseFloat(row.baseSalary),
+            index: row.index ? parseInt(row.index, 10) : null,
             rib: row.rib?.trim() || null,
             bankName: row.bankName?.trim() || null,
+            email: row.email?.trim() || null,
+            phone: row.phone?.trim() || null,
             recruitmentDate: row.recruitmentDate ? new Date(row.recruitmentDate) : null,
             status: "ACTIVE",
             organizationId,

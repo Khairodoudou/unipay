@@ -15,6 +15,8 @@ import {
   User,
   Loader2,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 interface RoleOption {
@@ -36,9 +38,9 @@ interface UserDetailFormProps {
     lastName: string;
     isActive: boolean;
     roleId: string;
-    organizationId: string;
+    organizationId?: string | null;
     role: { code: string; nameAr: string };
-    organization: { name: string };
+    organization?: { name: string } | null;
   };
   roles: RoleOption[];
   organizations: OrgOption[];
@@ -51,6 +53,7 @@ export function UserDetailForm({ user, roles, organizations }: UserDetailFormPro
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -211,7 +214,7 @@ export function UserDetailForm({ user, roles, organizations }: UserDetailFormPro
               </label>
               <select
                 name="organizationId"
-                defaultValue={user.organizationId}
+                defaultValue={user.organizationId || ""}
                 required
                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all font-medium text-slate-800"
               >
@@ -308,15 +311,26 @@ export function UserDetailForm({ user, roles, organizations }: UserDetailFormPro
             <label className="block text-xs font-bold text-slate-700 mb-1.5">
               كلمة المرور الجديدة
             </label>
-            <input
-              type="password"
-              name="newPassword"
-              required
-              minLength={8}
-              dir="ltr"
-              placeholder="••••••••••••"
-              className="w-full sm:w-80 px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all font-mono"
-            />
+            <div className="relative w-full sm:w-80">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                name="newPassword"
+                required
+                minLength={8}
+                dir="ltr"
+                placeholder="••••••••••••"
+                className="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200 text-xs bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword((v) => !v)}
+                className="absolute inset-y-0 left-2 flex items-center text-slate-400 hover:text-slate-700 transition-colors"
+                tabIndex={-1}
+                aria-label={showNewPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+              >
+                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
             <p className="text-[10px] text-slate-400 mt-1">
               8 أحرف كحد أدنى، حرف كبير، حرف صغير ورقم.
             </p>

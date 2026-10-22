@@ -58,7 +58,17 @@ export default async function ChefBatchAuditPage({
   return (
     <div className="space-y-6">
       <BatchReviewHeader
-        batch={batch}
+        batch={{
+          id: batch.id,
+          versionNumber: batch.versionNumber ?? 1,
+          label: batch.label,
+          status: batch.status,
+          period: batch.period,
+          totalGross: batch.records.reduce((s, r) => s + Number(r.grossAmount ?? 0), 0),
+          totalNet: batch.records.reduce((s, r) => s + Number(r.netAmount ?? 0), 0),
+          totalDeductions: batch.records.reduce((s, r) => s + Number(r.totalDeductions ?? 0), 0),
+          employeeCount: batch._count?.employees ?? 0,
+        }}
         backHref={`/chef/batches/${batch.id}`}
         backLabel="العودة لصفحة مراجعة الدفعة"
         subtitle="تقرير مفصل لفحوصات التدقيق الذكي والذكاء الاصطناعي (Smart Audit)"

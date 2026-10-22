@@ -62,7 +62,8 @@ const REVALIDATE_PATHS = [
 export async function canAccessBatch(
   userId: string,
   userOrgId: string,
-  batchId: string
+  batchId: string,
+  userRole?: string
 ): Promise<string | null> {
   const batch = await prisma.payrollBatch.findUnique({
     where: { id: batchId },
@@ -71,8 +72,9 @@ export async function canAccessBatch(
 
   if (!batch) return "الدفعة غير موجودة.";
 
-  // Si organizationId est null (batch hérité Phase 4), on autorise l'accès dans la même org
-  if (batch.organizationId && batch.organizationId !== userOrgId) {
+  if (userRole === "SUPER_ADMIN") return null;
+
+  if (!batch.organizationId || batch.organizationId !== userOrgId) {
     return "ليس لديك صلاحية الوصول إلى هذه الدفعة (نطاق مختلف).";
   }
 
@@ -132,7 +134,7 @@ export async function executeTransition(
   }
 
   // ── 6. Récupérer le batch + org-scope ────────────────────────────────────
-  const accessError = await canAccessBatch(user.id, user.organizationId, batchId);
+  const accessError = await canAccessBatch(user.id, user.organizationId, batchId, user.roleCode);
   if (accessError) return { success: false, error: accessError };
 
   // ── 7. Exécuter dans une transaction atomique (anti-concurrence) ──────────
@@ -154,7 +156,7 @@ export async function executeTransition(
       if (!batch) throw new Error("الدفعة غير موجودة.");
 
       // Vérification stricte du périmètre organisationnel dans la transaction
-      if (batch.organizationId && batch.organizationId !== user.organizationId) {
+      if (user.roleCode !== "SUPER_ADMIN" && (!batch.organizationId || batch.organizationId !== user.organizationId)) {
         throw new Error("ليس لديك صلاحية الوصول إلى هذه الدفعة (نطاق مختلف).");
       }
 

@@ -1,4 +1,5 @@
 export type RoleCode =
+  | "SUPER_ADMIN"
   | "ADMIN"
   | "AGENT_RH"
   | "CHEF_SERVICE"
@@ -15,6 +16,12 @@ export interface RoleMetadata {
 }
 
 export const ROLES: Record<RoleCode, RoleMetadata> = {
+  SUPER_ADMIN: {
+    code: "SUPER_ADMIN",
+    nameAr: "المدير الوطني العام",
+    descriptionAr: "إدارة المنصة المركزية الوطنية، تسجيل واعتماد الجامعات، وحوكمة النظام",
+    dashboardPath: "/super-admin/dashboard",
+  },
   ADMIN: {
     code: "ADMIN",
     nameAr: "مدير النظام",

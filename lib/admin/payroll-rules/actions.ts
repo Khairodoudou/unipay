@@ -14,7 +14,7 @@ export interface ActionResult<T = unknown> {
 
 async function verifyAdminCaller() {
   const caller = await getCurrentUser();
-  if (!caller || !caller.isActive || caller.roleCode !== "ADMIN") {
+  if (!caller || !caller.isActive || (caller.roleCode !== "ADMIN" && caller.roleCode !== "SUPER_ADMIN")) {
     throw new Error("غير مصرح لك بتنفيذ هذه العملية الإدارية.");
   }
   return caller;

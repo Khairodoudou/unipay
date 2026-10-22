@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Arabic, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
+import PublicChatbot from "@/components/public/PublicChatbot";
 import "./globals.css";
 
 const notoSansArabic = Noto_Sans_Arabic({
@@ -38,6 +40,8 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-background text-foreground antialiased">
         {children}
+        <PublicChatbot />
+        <Toaster richColors position="top-center" dir="rtl" />
       </body>
     </html>
   );

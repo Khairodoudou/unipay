@@ -42,7 +42,7 @@ export default async function ComptablePaymentPage() {
       _count: { select: { transactions: true } },
     },
     orderBy: { createdAt: "desc" },
-    take: 50,
+    take: 200,
   });
 
   // 3. Compteurs de statuts
@@ -52,6 +52,16 @@ export default async function ComptablePaymentPage() {
     _count: { id: true },
   });
 
+  // 4. Calcul des années disponibles pour le filtre
+  const yearSet = new Set<number>();
+  authorizedBatches.forEach(b => { if (b.period?.year) yearSet.add(b.period.year); });
+  paymentOrders.forEach(o => { if (o.batch.period?.year) yearSet.add(o.batch.period.year); });
+  const currentYear = new Date().getFullYear();
+  [currentYear - 2, currentYear - 1, currentYear, currentYear + 1, currentYear + 2, currentYear + 3].forEach(y => yearSet.add(y));
+  const availableYears = Array.from(yearSet)
+    .filter(y => y >= 2024 && y <= 2035)
+    .sort((a, b) => a - b);
+
   return (
     <PaymentDashboardClient
       user={{
@@ -59,14 +69,18 @@ export default async function ComptablePaymentPage() {
         roleCode: user.roleCode,
         permissions: user.permissions,
       }}
+      availableYears={availableYears}
       authorizedBatches={authorizedBatches.map(b => ({
         id: b.id,
         label: b.label ?? b.period?.label ?? b.id,
         period: b.period
           ? `${b.period.year}/${String(b.period.month).padStart(2, "0")}`
           : "–",
+        periodYear: b.period?.year ?? null,
+        periodMonth: b.period?.month ?? null,
         employeeCount: b._count.employees,
         totalNet: b.records.reduce((sum, r) => sum + Number(r.netAmount), 0),
+        createdAt: b.createdAt.toISOString(),
       }))}
       paymentOrders={paymentOrders.map(o => ({
         id: o.id,
@@ -89,6 +103,8 @@ export default async function ComptablePaymentPage() {
         batchId: o.batch.id,
         batchLabel: o.batch.label ?? o.batch.period?.label ?? o.batchId,
         batchStatus: o.batch.status,
+        batchPeriodYear: o.batch.period?.year ?? null,
+        batchPeriodMonth: o.batch.period?.month ?? null,
         createdByName: o.createdBy
           ? `${o.createdBy.firstName} ${o.createdBy.lastName}`
           : null,

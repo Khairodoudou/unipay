@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db/prisma";
 import { requireRole } from "@/lib/rbac/guards";
+import { BatchYearFilter } from "@/components/agent/batches/BatchYearFilter";
 import {
   FileSpreadsheet,
   CheckCircle2,
@@ -17,10 +18,44 @@ export const metadata: Metadata = {
   description: "متابعة وإدارة دفعات الأجور ومسيرات الرواتب",
 };
 
-export default async function BatchesPage() {
-  await requireRole(["AGENT_RH", "ADMIN"]);
+interface BatchesPageProps {
+  searchParams?: Promise<{
+    year?: string;
+  }>;
+}
+
+const START_YEAR = 2026;
+const END_YEAR = 2056;
+
+// Années fiscales valides de 2026 à 2056
+const availableYears = Array.from(
+  { length: END_YEAR - START_YEAR + 1 },
+  (_, i) => START_YEAR + i
+);
+
+export default async function BatchesPage({ searchParams }: BatchesPageProps) {
+  const user = await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
+
+  const params = searchParams ? await searchParams : {};
+  const rawYear = params.year ? parseInt(params.year, 10) : undefined;
+  const selectedYear =
+    rawYear && !isNaN(rawYear) && rawYear >= START_YEAR && rawYear <= END_YEAR
+      ? rawYear
+      : undefined;
+
+  const baseWhere = user.roleCode === "SUPER_ADMIN" && !user.organizationId
+    ? {}
+    : { organizationId: user.organizationId };
+
+  const where = {
+    ...baseWhere,
+    period: selectedYear
+      ? { year: selectedYear }
+      : { year: { gte: START_YEAR, lte: END_YEAR } },
+  };
 
   const batches = await prisma.payrollBatch.findMany({
+    where,
     orderBy: { createdAt: "desc" },
     include: {
       period: true,
@@ -95,15 +130,50 @@ export default async function BatchesPage() {
         </Link>
       </div>
 
+      {/* Year Filter Bar */}
+      <BatchYearFilter
+        availableYears={availableYears}
+        selectedYear={selectedYear}
+        totalBatches={batches.length}
+      />
+
       {/* Batches Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
         {batches.length === 0 ? (
           <div className="p-12 text-center">
             <FileSpreadsheet className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-slate-800">لا توجد دفعات أجر مسجلة بعد</h3>
-            <p className="text-xs text-slate-500 mt-1">
-              توجه إلى فترات الأجر لإنشاء أول دفعة.
-            </p>
+            {selectedYear ? (
+              <>
+                <h3 className="text-base font-bold text-slate-800">
+                  لا توجد دفعات أجر مسجلة لسنة {selectedYear}
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  لم يتم العثور على أي دفعة أجر مطابقة للسنة المالية المختارة.
+                </p>
+                <div className="mt-4 flex items-center justify-center gap-2">
+                  <Link
+                    href="/agent/batches"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 transition-colors"
+                  >
+                    <span>عرض كل السنوات</span>
+                  </Link>
+                  <Link
+                    href="/agent/payroll-periods"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 shadow-xs transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>إنشاء دفعة جديدة</span>
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-base font-bold text-slate-800">لا توجد دفعات أجر مسجلة بعد</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  توجه إلى فترات الأجر لإنشاء أول دفعة.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">

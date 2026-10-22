@@ -19,6 +19,14 @@ export type AuditAction =
   | "ORGANIZATION_UNIT_CREATED"
   | "ORGANIZATION_UNIT_UPDATED"
   | "SETTINGS_UPDATED"
+  // Multi-Tenant National Operations
+  | "UNIVERSITY_CREATED"
+  | "UNIVERSITY_UPDATED"
+  | "UNIVERSITY_SUSPENDED"
+  | "UNIVERSITY_REACTIVATED"
+  | "UNIVERSITY_ARCHIVED"
+  | "UNIVERSITY_DELETED"
+  | "TENANT_SWITCHED"
   | "PAYROLL_RULE_CREATED"
   | "PAYROLL_RULE_UPDATED"
   | "PAYROLL_RULE_ACTIVATED"
@@ -81,6 +89,7 @@ export type AuditAction =
 
 export interface CreateAuditLogParams {
   userId?: string | null;
+  organizationId?: string | null;
   action: AuditAction;
   resourceType?: string;
   resourceId?: string;
@@ -117,6 +126,7 @@ export async function recordAuditLog(params: CreateAuditLogParams): Promise<void
     await prisma.auditLog.create({
       data: {
         userId: params.userId || null,
+        organizationId: params.organizationId || null,
         action: params.action,
         resourceType: params.resourceType || "AUTH",
         resourceId: params.resourceId || null,

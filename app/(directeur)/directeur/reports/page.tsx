@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/rbac/guards";
 import prisma from "@/lib/db/prisma";
+import {
+  DirecteurReportsFilterView,
+  SerializedReportBatch,
+} from "@/components/directeur/reports/DirecteurReportsFilterView";
 import { BarChart3 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "التقارير والمؤشرات — مدير المؤسسة — UNI-PAY",
+  title: "التقارير والمؤشرات المالية — مدير المؤسسة — UNI-PAY",
+  description: "مؤشرات كتلة الأجور، التطور الشهري، واقتطاعات الضمان الاجتماعي والضريبة مع أدوات التصفية والتحليل",
 };
 
 export default async function DirecteurReportsPage() {
   const user = await requireRole(["DIRECTEUR", "ADMIN"]);
 
   const batches = await prisma.payrollBatch.findMany({
-    where: { organizationId: user.organizationId },
+    where: {
+      organizationId: user.organizationId,
+      period: { year: { gte: 2024, lte: 2035 } },
+    },
     include: {
       period: true,
       records: {
@@ -22,22 +30,42 @@ export default async function DirecteurReportsPage() {
     orderBy: [{ period: { year: "desc" } }, { period: { month: "desc" } }],
   });
 
-  const totalGrossAll = batches.reduce(
-    (acc, b) => acc + b.records.reduce((sum, r) => sum + Number(r.grossAmount), 0),
-    0
-  );
-  const totalNetAll = batches.reduce(
-    (acc, b) => acc + b.records.reduce((sum, r) => sum + Number(r.netAmount), 0),
-    0
-  );
-  const totalDeductionsAll = batches.reduce(
-    (acc, b) => acc + b.records.reduce((sum, r) => sum + Number(r.totalDeductions), 0),
-    0
-  );
+  // Extract unique years (already server-filtered to 2024-2035)
+  const yearSet = new Set<number>();
+  batches.forEach((b) => {
+    if (b.period?.year) yearSet.add(b.period.year);
+  });
+  // Always include current and near-future years as defaults
+  if (yearSet.size === 0) {
+    [2025, 2026, 2027, 2028, 2029].forEach((y) => yearSet.add(y));
+  }
+  const availableYears = Array.from(yearSet).sort((a, b) => b - a);
+
+  // Convert Decimals to numbers
+  const serializedBatches: SerializedReportBatch[] = batches.map((b) => {
+    const grossAmount = b.records.reduce((sum, r) => sum + Number(r.grossAmount ?? 0), 0);
+    const netAmount = b.records.reduce((sum, r) => sum + Number(r.netAmount ?? 0), 0);
+    const totalDeductions = b.records.reduce((sum, r) => sum + Number(r.totalDeductions ?? 0), 0);
+
+    return {
+      id: b.id,
+      label: b.label,
+      versionNumber: b.versionNumber ?? 1,
+      status: b.status,
+      month: b.period.month,
+      year: b.period.year,
+      periodLabel: b.period.label,
+      employeeCount: b._count.employees,
+      grossAmount,
+      netAmount,
+      totalDeductions,
+    };
+  });
 
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <BarChart3 className="w-5 h-5 text-purple-600" />
@@ -46,86 +74,20 @@ export default async function DirecteurReportsPage() {
             </h1>
           </div>
           <p className="text-sm text-slate-500">
-            مؤشرات إجمالية لكتلة الأجور، التطور الشهري، واقتطاعات الضمان الاجتماعي والضريبة
+            مؤشرات إجمالية لكتلة الأجور، التطور الشهري، واقتطاعات الضمان الاجتماعي والضريبة مع إمكانية التصفية وتصدير البيانات
           </p>
+        </div>
+
+        <div className="text-xs font-semibold text-slate-600 bg-slate-100 px-3.5 py-2 rounded-xl self-start md:self-auto">
+          إجمالي الفترات المسجلة: <strong className="font-mono text-slate-900">{batches.length}</strong>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-          <span className="text-xs font-semibold text-slate-500">مجموع الأجور الخام التراكمي</span>
-          <p className="text-xl font-bold text-slate-900 mt-2 font-mono">
-            {new Intl.NumberFormat("ar-DZ", { maximumFractionDigits: 0 }).format(totalGrossAll)} د.ج
-          </p>
-          <p className="text-xs text-slate-400 mt-1">كافة الدفعات المسجلة</p>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-          <span className="text-xs font-semibold text-slate-500">مجموع الاقتطاعات (IRG + CNAS)</span>
-          <p className="text-xl font-bold text-amber-900 mt-2 font-mono">
-            {new Intl.NumberFormat("ar-DZ", { maximumFractionDigits: 0 }).format(totalDeductionsAll)} د.ج
-          </p>
-          <p className="text-xs text-slate-400 mt-1">المستحقات الضريبية وشبه الضريبية</p>
-        </div>
-
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 shadow-xs">
-          <span className="text-xs font-semibold text-emerald-800">مجموع الصافي المصروف</span>
-          <p className="text-xl font-bold text-emerald-950 mt-2 font-mono">
-            {new Intl.NumberFormat("ar-DZ", { maximumFractionDigits: 0 }).format(totalNetAll)} د.ج
-          </p>
-          <p className="text-xs text-emerald-700 mt-1">صافي أجور الموظفين الإجمالي</p>
-        </div>
-      </div>
-
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="p-4 sm:px-6 bg-slate-50 border-b border-slate-200">
-          <h2 className="text-sm font-bold text-slate-800">تطور كتل الأجور الشهرية</h2>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-right text-sm">
-            <thead className="bg-slate-50 text-slate-500 text-xs font-semibold border-b border-slate-200">
-              <tr>
-                <th className="py-3 px-4">الشهر / السنة</th>
-                <th className="py-3 px-4">الدفعة</th>
-                <th className="py-3 px-4">تعداد العمال</th>
-                <th className="py-3 px-4">الكتلة الخام</th>
-                <th className="py-3 px-4">الاقتطاعات</th>
-                <th className="py-3 px-4">الصافي</th>
-                <th className="py-3 px-4">الحالة</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {batches.map((b) => {
-                const bGross = b.records.reduce((sum, r) => sum + Number(r.grossAmount), 0);
-                const bNet = b.records.reduce((sum, r) => sum + Number(r.netAmount), 0);
-                const bDeduc = b.records.reduce((sum, r) => sum + Number(r.totalDeductions), 0);
-                return (
-                  <tr key={b.id} className="hover:bg-slate-50/70">
-                    <td className="py-3 px-4 font-semibold text-slate-900">
-                      {b.period.month}/{b.period.year}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-purple-900">
-                      {b.label || `دفعة v${b.versionNumber}`}
-                    </td>
-                    <td className="py-3 px-4 font-mono">{b._count.employees}</td>
-                    <td className="py-3 px-4 font-mono font-medium">
-                      {new Intl.NumberFormat("ar-DZ", { maximumFractionDigits: 0 }).format(bGross)} د.ج
-                    </td>
-                    <td className="py-3 px-4 font-mono text-amber-800">
-                      {new Intl.NumberFormat("ar-DZ", { maximumFractionDigits: 0 }).format(bDeduc)} د.ج
-                    </td>
-                    <td className="py-3 px-4 font-mono font-bold text-emerald-700">
-                      {new Intl.NumberFormat("ar-DZ", { maximumFractionDigits: 0 }).format(bNet)} د.ج
-                    </td>
-                    <td className="py-3 px-4 text-xs font-mono text-slate-600">{b.status}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Filter View with dynamic KPIs and Table */}
+      <DirecteurReportsFilterView
+        batches={serializedBatches}
+        availableYears={availableYears}
+      />
     </div>
   );
 }

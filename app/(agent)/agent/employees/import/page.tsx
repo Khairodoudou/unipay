@@ -13,7 +13,7 @@ export default async function EmployeeImportPage() {
   const user = await requireRole(["AGENT_RH", "ADMIN"]);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in">
+    <div className="space-y-6 max-w-7xl mx-auto animate-fade-in pb-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

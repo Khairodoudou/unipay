@@ -5,6 +5,7 @@ export const SESSION_COOKIE_NAME = "uni_pay_session";
 
 // Routes protégées nécessitant une session active
 const PROTECTED_PREFIXES = [
+  "/super-admin",
   "/admin",
   "/agent",
   "/chef",
@@ -34,6 +35,7 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/super-admin/:path*",
     "/admin/:path*",
     "/agent/:path*",
     "/chef/:path*",

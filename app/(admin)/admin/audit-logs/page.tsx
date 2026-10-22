@@ -84,15 +84,17 @@ function getPageQuery(page: number) {
 }
 
 export default async function AdminAuditLogsPage({ searchParams }: AuditLogsPageProps) {
-  await requireRole("ADMIN");
+  const currentUser = await requireRole(["ADMIN", "SUPER_ADMIN"]);
   const params = await searchParams;
 
   const action = params.action?.trim() || "";
   const search = params.search?.trim() || "";
   const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
 
-  // Build Prisma filter
-  const where: Prisma.AuditLogWhereInput = {};
+  // Build Prisma filter (strictement isolé par université pour un ADMIN local)
+  const where: Prisma.AuditLogWhereInput = currentUser.roleCode === "SUPER_ADMIN" && !currentUser.organizationId
+    ? {}
+    : { organizationId: currentUser.organizationId };
   if (action) {
     where.action = action;
   }

@@ -29,6 +29,7 @@ interface Employee {
   position: string | null;
   rib: string | null;
   bankName: string | null;
+  nationalId?: string | null;
   [key: string]: unknown;
 }
 
@@ -180,6 +181,21 @@ export function EmployeeDetailClient({ employee, units }: EmployeeDetailClientPr
                     defaultValue={employee.lastName}
                     required
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 text-slate-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    رقم التعريف الوطني (NIN)
+                  </label>
+                  <input
+                    type="text"
+                    name="nationalId"
+                    maxLength={18}
+                    dir="ltr"
+                    placeholder="18 رقماً"
+                    defaultValue={employee.nationalId || ""}
+                    className="w-full px-3 py-2 text-xs font-mono font-semibold rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 text-slate-900 text-right tracking-wider placeholder:tracking-normal"
                   />
                 </div>
 

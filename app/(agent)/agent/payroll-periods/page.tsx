@@ -3,6 +3,7 @@ import Link from "next/link";
 import prisma from "@/lib/db/prisma";
 import { requireRole } from "@/lib/rbac/guards";
 import { PeriodClient } from "@/components/agent/payroll/PeriodClient";
+import { PeriodFilterBar } from "@/components/agent/payroll/PeriodFilterBar";
 import {
   Calendar,
   ArrowUpRight,
@@ -17,13 +18,57 @@ export const metadata: Metadata = {
   description: "إدارة الفترات الشهرية للأجور ودفعات الرواتب",
 };
 
-export default async function PayrollPeriodsPage() {
-  await requireRole(["AGENT_RH", "ADMIN"]);
+interface PayrollPeriodsPageProps {
+  searchParams?: Promise<{
+    year?: string;
+    status?: string;
+  }>;
+}
+
+const START_YEAR = 2026;
+const END_YEAR = 2056;
+
+// Années fiscales valides de 2026 à 2056
+const availableYears = Array.from(
+  { length: END_YEAR - START_YEAR + 1 },
+  (_, i) => START_YEAR + i
+);
+
+export default async function PayrollPeriodsPage({ searchParams }: PayrollPeriodsPageProps) {
+  const user = await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
+
+  const params = searchParams ? await searchParams : {};
+  const rawYear = params.year ? parseInt(params.year, 10) : undefined;
+  const selectedYear =
+    rawYear && !isNaN(rawYear) && rawYear >= START_YEAR && rawYear <= END_YEAR
+      ? rawYear
+      : undefined;
+
+  const validStatuses = ["OPEN", "PROCESSING", "CLOSED", "DRAFT"];
+  const selectedStatus =
+    params.status && validStatuses.includes(params.status)
+      ? params.status
+      : undefined;
+
+  const hasFilters = Boolean(selectedYear || selectedStatus);
+
+  const where = {
+    year: selectedYear
+      ? selectedYear
+      : { gte: START_YEAR, lte: END_YEAR },
+    ...(selectedStatus ? { status: selectedStatus } : {}),
+  };
+
+  const batchWhere = user.roleCode === "SUPER_ADMIN" && !user.organizationId
+    ? {}
+    : { organizationId: user.organizationId };
 
   const periods = await prisma.payrollPeriod.findMany({
+    where,
     orderBy: [{ year: "desc" }, { month: "desc" }],
     include: {
       batches: {
+        where: batchWhere,
         orderBy: { versionNumber: "desc" },
         include: {
           _count: {
@@ -88,15 +133,44 @@ export default async function PayrollPeriodsPage() {
         <PeriodClient />
       </div>
 
+      {/* Filter Bar (Années 2026-2056 + Statut) */}
+      <PeriodFilterBar
+        availableYears={availableYears}
+        selectedYear={selectedYear}
+        selectedStatus={selectedStatus}
+        totalPeriods={periods.length}
+      />
+
       {/* List of Periods */}
       <div className="grid grid-cols-1 gap-4">
         {periods.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center shadow-2xs">
             <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-slate-800">لا توجد فترات أجر مسجلة بعد</h3>
-            <p className="text-xs text-slate-500 mt-1">
-              قم بإنشاء أول فترة أجر شهرية لبدء تحضير دفعات الرواتب.
-            </p>
+            {hasFilters ? (
+              <>
+                <h3 className="text-base font-bold text-slate-800">
+                  لا توجد فترات أجر تطابق معايير التصفية
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  جرب تغيير خيارات التصفية أو إلغاء الفلتر لعرض جميع الفترات.
+                </p>
+                <div className="mt-4 flex items-center justify-center gap-2">
+                  <Link
+                    href="/agent/payroll-periods"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 transition-colors"
+                  >
+                    <span>عرض كل الفترات</span>
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-base font-bold text-slate-800">لا توجد فترات أجر مسجلة بعد</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  قم بإنشاء أول فترة أجر شهرية لبدء تحضير دفعات الرواتب.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           periods.map((period) => (
@@ -107,7 +181,11 @@ export default async function PayrollPeriodsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-base font-bold text-slate-900">{period.label}</h2>
+                    <h2 className="text-base font-bold text-slate-900">
+                      {period.label
+                        ? period.label.replace(/\b20\d\d\b/, String(period.year))
+                        : `أجر شهر ${period.month} ${period.year}`}
+                    </h2>
                     {periodStatusBadge(period.status)}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">

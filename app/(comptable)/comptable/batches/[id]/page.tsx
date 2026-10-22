@@ -8,7 +8,8 @@ import { WorkflowTimeline } from "@/components/workflow/WorkflowTimeline";
 import { ApproveRejectForm } from "@/components/workflow/ApproveRejectForm";
 import { BatchWorkflowSummary } from "@/components/workflow/BatchWorkflowSummary";
 import { WorkflowAuditFindings } from "@/components/workflow/WorkflowAuditFindings";
-import { validateAccountingAction, returnByAccountingAction } from "@/lib/workflow/workflow-actions";
+import { validateAccountingAction, returnByAccountingAction, takeAccountingReviewAction } from "@/lib/workflow/workflow-actions";
+import { TakeReviewButton } from "@/components/workflow/TakeReviewButton";
 import { Receipt, BookOpenCheck, ExternalLink } from "lucide-react";
 
 interface ComptableBatchDetailPageProps {
@@ -29,7 +30,7 @@ export default async function ComptableBatchDetailPage({
     where: { id },
     include: {
       period: true,
-      records: { select: { grossAmount: true, netAmount: true } },
+      records: { select: { grossAmount: true, netAmount: true, totalDeductions: true } },
       _count: { select: { employees: true } },
       auditFindings: {
         include: {
@@ -71,7 +72,17 @@ export default async function ComptableBatchDetailPage({
     <div className="space-y-6">
       {/* Header */}
       <BatchReviewHeader
-        batch={batch}
+        batch={{
+          id: batch.id,
+          versionNumber: batch.versionNumber ?? 1,
+          label: batch.label,
+          status: batch.status,
+          period: batch.period,
+          totalGross: batch.records.reduce((s, r) => s + Number(r.grossAmount ?? 0), 0),
+          totalNet: batch.records.reduce((s, r) => s + Number(r.netAmount ?? 0), 0),
+          totalDeductions: batch.records.reduce((s, r) => s + Number(r.totalDeductions ?? 0), 0),
+          employeeCount: batch._count?.employees ?? 0,
+        }}
         backHref="/comptable/batches"
         backLabel="العودة لقائمة الدفعات"
         subtitle="التأشير المحاسبي والتحقق من حسابات الأجور والتسويات"
@@ -82,6 +93,16 @@ export default async function ComptableBatchDetailPage({
         currentStatus={batch.status}
         workflowActions={batch.workflowActions}
       />
+
+      {batch.status === "APPROVED_BY_DIRECTOR" && (
+        <TakeReviewButton
+          batchId={batch.id}
+          action={takeAccountingReviewAction}
+          label="استلام وبدء المراجعة المحاسبية"
+          subtitle="صودق على هذه الدفعة من طرف مدير المؤسسة وهي الآن بانتظار التأشير المحاسبي"
+          variant="emerald"
+        />
+      )}
 
       {/* Zone de décision Comptable */}
       {canAct ? (

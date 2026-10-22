@@ -127,6 +127,7 @@ export default async function EmployeeDetailPage({ params }: EmployeeDetailPageP
               position: employee.position,
               rib: employee.rib,
               bankName: employee.bankName,
+              nationalId: employee.nationalId,
             }}
             units={units}
           />
@@ -144,7 +145,7 @@ export default async function EmployeeDetailPage({ params }: EmployeeDetailPageP
 
           <div className="space-y-3 text-xs">
             <div className="flex items-center justify-between py-1.5 border-b border-slate-50">
-              <span className="text-slate-500">رقم بطاقة التعريف (CIN):</span>
+              <span className="text-slate-500">رقم التعريف الوطني (NIN):</span>
               <span className="font-mono font-bold text-slate-800">
                 {employee.nationalId || "—"}
               </span>

@@ -8,7 +8,8 @@ import { WorkflowTimeline } from "@/components/workflow/WorkflowTimeline";
 import { ApproveRejectForm } from "@/components/workflow/ApproveRejectForm";
 import { BatchWorkflowSummary } from "@/components/workflow/BatchWorkflowSummary";
 import { WorkflowAuditFindings } from "@/components/workflow/WorkflowAuditFindings";
-import { approveByDirectorAction, returnByDirectorAction } from "@/lib/workflow/workflow-actions";
+import { approveByDirectorAction, returnByDirectorAction, takeDirectorReviewAction } from "@/lib/workflow/workflow-actions";
+import { TakeReviewButton } from "@/components/workflow/TakeReviewButton";
 import { Crown, ExternalLink } from "lucide-react";
 
 interface DirecteurBatchDetailPageProps {
@@ -77,7 +78,17 @@ export default async function DirecteurBatchDetailPage({
   return (
     <div className="space-y-6">
       <BatchReviewHeader
-        batch={batch}
+        batch={{
+          id: batch.id,
+          versionNumber: batch.versionNumber ?? 1,
+          label: batch.label,
+          status: batch.status,
+          period: batch.period,
+          totalGross: batch.records.reduce((s, r) => s + Number(r.grossAmount ?? 0), 0),
+          totalNet: batch.records.reduce((s, r) => s + Number(r.netAmount ?? 0), 0),
+          totalDeductions: batch.records.reduce((s, r) => s + Number(r.totalDeductions ?? 0), 0),
+          employeeCount: batch._count?.employees ?? 0,
+        }}
         backHref="/directeur/batches"
         backLabel="العودة لقائمة الدفعات"
         subtitle="المصادقة الإدارية والتنفيذية قبل الإحالة للمصالح المالية والمحاسبية"
@@ -87,6 +98,16 @@ export default async function DirecteurBatchDetailPage({
         currentStatus={batch.status}
         workflowActions={batch.workflowActions}
       />
+
+      {batch.status === "APPROVED_BY_CHEF" && (
+        <TakeReviewButton
+          batchId={batch.id}
+          action={takeDirectorReviewAction}
+          label="استلام وبدء دراسة الدفعة (Prise en charge)"
+          subtitle="صودق على هذه الدفعة من طرف رئيس مصلحة المستخدمين وهي الآن في انتظار اعتمادك الإداري"
+          variant="purple"
+        />
+      )}
 
       {canAct ? (
         <div className="bg-purple-50/50 border border-purple-200 rounded-xl p-6">

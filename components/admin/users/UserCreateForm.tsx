@@ -13,6 +13,8 @@ import {
   Lock,
   User,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 interface RoleOption {
@@ -36,6 +38,7 @@ export function UserCreateForm({ roles, organizations }: UserCreateFormProps) {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -145,15 +148,26 @@ export function UserCreateForm({ roles, organizations }: UserCreateFormProps) {
               <Lock className="w-3.5 h-3.5 text-slate-400" />
               <span>كلمة المرور الأولية</span> <span className="text-red-500">*</span>
             </label>
-            <input
-              type="password"
-              name="password"
-              required
-              minLength={8}
-              dir="ltr"
-              placeholder="••••••••••••"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all font-mono"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                required
+                minLength={8}
+                dir="ltr"
+                placeholder="••••••••••••"
+                className="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200 text-xs bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 left-2 flex items-center text-slate-400 hover:text-slate-700 transition-colors"
+                tabIndex={-1}
+                aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
             <p className="text-[10px] text-slate-400 mt-1">
               8 أحرف كحد أدنى، تشمل حرفاً كبيراً، صغيراً ورقماً.
             </p>

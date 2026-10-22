@@ -146,16 +146,26 @@ export function EmployeeForm({ organizationId, units }: EmployeeFormProps) {
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              رقم بطاقة التعريف الوطنية (CIN)
-            </label>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700">
+                رقم التعريف الوطني (NIN)
+              </label>
+              <span className="text-[10px] text-teal-700 font-semibold bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200/60 font-mono">
+                18 رقماً
+              </span>
+            </div>
             <input
               type="text"
               name="nationalId"
-              placeholder="رقم بطاقة التعريف"
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-slate-900"
+              maxLength={18}
+              dir="ltr"
+              placeholder="مثال: 101980123456789012"
+              className="w-full px-3 py-2 text-xs font-mono font-semibold rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-slate-900 text-right tracking-wider placeholder:tracking-normal placeholder:font-normal"
             />
+            <p className="text-[10px] text-slate-400">
+              الرقم الوطني البيومتري الموحد للموظف (بطاقة التعريف / جواز السفر)
+            </p>
           </div>
         </div>
       </div>

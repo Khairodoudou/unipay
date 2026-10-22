@@ -17,7 +17,7 @@ export interface ActionResult<T = unknown> {
 
 async function verifyAdminCaller(permission?: string) {
   const caller = await getCurrentUser();
-  if (!caller || !caller.isActive || caller.roleCode !== "ADMIN") {
+  if (!caller || !caller.isActive || (caller.roleCode !== "ADMIN" && caller.roleCode !== "SUPER_ADMIN")) {
     throw new Error("غير مصرح لك بإدارة الهيكل التنظيمي.");
   }
   if (permission && !caller.permissions.includes(permission)) {
@@ -52,6 +52,11 @@ export async function updateOrganizationAction(
     }
 
     const { id, name, address, wilaya, phone, email, website, description } = parsed.data;
+
+    // Contrôle d'isolation de tenant
+    if (caller.roleCode !== "SUPER_ADMIN" && id !== caller.organizationId) {
+      return { success: false, error: "عملية مرفوضة: لا تملك صلاحية تعديل بيانات مؤسسة جامعية أخرى." };
+    }
 
     const orgBefore = await prisma.organization.findUnique({
       where: { id },
@@ -123,6 +128,15 @@ export async function createOrganizationUnitAction(
 
     const { name, code, type, parentId, organizationId, isActive } = parsed.data;
 
+    // Règle d'isolation : l'unité appartient strictement à l'université de l'administrateur
+    const effectiveOrgId = caller.roleCode === "SUPER_ADMIN"
+      ? (organizationId || caller.organizationId)
+      : caller.organizationId;
+
+    if (!effectiveOrgId) {
+      return { success: false, error: "المؤسسة الجامعية مطلوبة لإنشاء الوحدة التنظيمية." };
+    }
+
     // Vérifier l'unicité du code
     const existingCode = await prisma.organizationUnit.findUnique({
       where: { code },
@@ -131,13 +145,24 @@ export async function createOrganizationUnitAction(
       return { success: false, error: "الرمز التقني لهذه الوحدة مستخدم مسبقاً." };
     }
 
+    // Si une unité parente est renseignée, vérifier qu'elle appartient à la MÊME université
+    if (parentId) {
+      const parentUnit = await prisma.organizationUnit.findUnique({
+        where: { id: parentId },
+        select: { id: true, organizationId: true },
+      });
+      if (!parentUnit || parentUnit.organizationId !== effectiveOrgId) {
+        return { success: false, error: "الوحدة التنظيمية الرئيسية المحددة غير صالحة أو تتبع جامعة أخرى." };
+      }
+    }
+
     const newUnit = await prisma.organizationUnit.create({
       data: {
         name,
         code,
         type,
         parentId: parentId || null,
-        organizationId,
+        organizationId: effectiveOrgId,
         isActive,
       },
     });
@@ -184,9 +209,34 @@ export async function updateOrganizationUnitAction(
       return { success: false, error: "اسم الوحدة ومعرفها مطلوبان." };
     }
 
+    // Récupérer l'unité existante
+    const existingUnit = await prisma.organizationUnit.findUnique({
+      where: { id },
+    });
+
+    if (!existingUnit) {
+      return { success: false, error: "الوحدة التنظيمية غير موجودة." };
+    }
+
+    // Contrôle d'isolation de tenant
+    if (caller.roleCode !== "SUPER_ADMIN" && existingUnit.organizationId !== caller.organizationId) {
+      return { success: false, error: "عملية مرفوضة: لا يمكنك تعديل وحدة تنظيمية تابعة لجامعة أخرى." };
+    }
+
     // Interdire d'avoir soi-même comme parent
     if (parentId && parentId === id) {
       return { success: false, error: "لا يمكن أن تكون الوحدة الإدارية فرعاً لنفسها." };
+    }
+
+    // Vérifier que l'unité parente appartient à la même université
+    if (parentId) {
+      const parentUnit = await prisma.organizationUnit.findUnique({
+        where: { id: parentId },
+        select: { id: true, organizationId: true },
+      });
+      if (!parentUnit || parentUnit.organizationId !== existingUnit.organizationId) {
+        return { success: false, error: "الوحدة الرئيسية المحددة تتبع لجامعة أخرى ولا يمكن ربطها." };
+      }
     }
 
     const updated = await prisma.organizationUnit.update({

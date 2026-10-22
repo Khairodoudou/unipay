@@ -22,6 +22,7 @@ export function PeriodClient() {
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
+  const defaultYear = currentYear >= 2026 && currentYear <= 2056 ? currentYear : 2026;
 
   const monthsAr = [
     "جانفي (يناير)",
@@ -37,6 +38,27 @@ export function PeriodClient() {
     "نوفمبر",
     "ديسمبر",
   ];
+
+  const [formYear, setFormYear] = useState<number>(defaultYear);
+  const [formMonth, setFormMonth] = useState<number>(currentMonth);
+  const [formLabel, setFormLabel] = useState<string>(
+    `أجر شهر ${monthsAr[currentMonth - 1]} ${defaultYear}`
+  );
+  const [isLabelCustom, setIsLabelCustom] = useState<boolean>(false);
+
+  const onYearChange = (y: number) => {
+    setFormYear(y);
+    if (!isLabelCustom) {
+      setFormLabel(`أجر شهر ${monthsAr[formMonth - 1]} ${y}`);
+    }
+  };
+
+  const onMonthChange = (m: number) => {
+    setFormMonth(m);
+    if (!isLabelCustom) {
+      setFormLabel(`أجر شهر ${monthsAr[m - 1]} ${formYear}`);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -72,6 +94,8 @@ export function PeriodClient() {
         onClick={() => {
           setError(null);
           setSuccess(null);
+          setFormLabel(`أجر شهر ${monthsAr[formMonth - 1]} ${formYear}`);
+          setIsLabelCustom(false);
           setOpenNew(true);
         }}
         className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 shadow-sm hover:shadow transition-all focus-ring cursor-pointer"
@@ -115,24 +139,29 @@ export function PeriodClient() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">السنة</label>
-                  <input
-                    type="number"
+                  <select
                     name="year"
-                    defaultValue={currentYear}
-                    min={2020}
-                    max={2099}
+                    value={formYear}
+                    onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
                     required
-                    className="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 text-slate-900"
-                  />
+                    className="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 text-slate-900 bg-white cursor-pointer"
+                  >
+                    {Array.from({ length: 2056 - 2026 + 1 }, (_, i) => 2026 + i).map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">الشهر</label>
                   <select
                     name="month"
-                    defaultValue={currentMonth}
+                    value={formMonth}
+                    onChange={(e) => onMonthChange(parseInt(e.target.value, 10))}
                     required
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 text-slate-900 bg-white"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 text-slate-900 bg-white cursor-pointer"
                   >
                     {monthsAr.map((m, idx) => (
                       <option key={idx + 1} value={idx + 1}>
@@ -151,8 +180,11 @@ export function PeriodClient() {
                   type="text"
                   name="label"
                   required
-                  placeholder={`مثال: أجر شهر ${monthsAr[currentMonth - 1]} ${currentYear}`}
-                  defaultValue={`أجر شهر ${monthsAr[currentMonth - 1]} ${currentYear}`}
+                  value={formLabel}
+                  onChange={(e) => {
+                    setFormLabel(e.target.value);
+                    setIsLabelCustom(true);
+                  }}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 text-slate-900"
                 />
               </div>

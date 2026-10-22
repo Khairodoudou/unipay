@@ -49,6 +49,14 @@ export async function approveByDirectorAction(
   batchId: string,
   notes?: string
 ): Promise<WorkflowResult> {
+  const currentBatch = await prisma.payrollBatch.findUnique({
+    where: { id: batchId },
+    select: { status: true },
+  });
+  if (currentBatch?.status === "APPROVED_BY_CHEF") {
+    const takeRes = await takeDirectorReviewAction(batchId);
+    if (!takeRes.success) return takeRes;
+  }
   return executeTransition({ batchId, action: "APPROVE_DIRECTOR", reason: notes });
 }
 
@@ -57,6 +65,14 @@ export async function returnByDirectorAction(
   batchId: string,
   reason: string
 ): Promise<WorkflowResult> {
+  const currentBatch = await prisma.payrollBatch.findUnique({
+    where: { id: batchId },
+    select: { status: true },
+  });
+  if (currentBatch?.status === "APPROVED_BY_CHEF") {
+    const takeRes = await takeDirectorReviewAction(batchId);
+    if (!takeRes.success) return takeRes;
+  }
   return executeTransition({ batchId, action: "RETURN_BY_DIRECTOR", reason });
 }
 
@@ -72,6 +88,14 @@ export async function validateAccountingAction(
   batchId: string,
   notes?: string
 ): Promise<WorkflowResult> {
+  const currentBatch = await prisma.payrollBatch.findUnique({
+    where: { id: batchId },
+    select: { status: true },
+  });
+  if (currentBatch?.status === "APPROVED_BY_DIRECTOR") {
+    const takeRes = await takeAccountingReviewAction(batchId);
+    if (!takeRes.success) return takeRes;
+  }
   return executeTransition({ batchId, action: "VALIDATE_ACCOUNTING", reason: notes });
 }
 
@@ -80,6 +104,14 @@ export async function returnByAccountingAction(
   batchId: string,
   reason: string
 ): Promise<WorkflowResult> {
+  const currentBatch = await prisma.payrollBatch.findUnique({
+    where: { id: batchId },
+    select: { status: true },
+  });
+  if (currentBatch?.status === "APPROVED_BY_DIRECTOR") {
+    const takeRes = await takeAccountingReviewAction(batchId);
+    if (!takeRes.success) return takeRes;
+  }
   return executeTransition({ batchId, action: "RETURN_BY_ACCOUNTING", reason });
 }
 
@@ -95,6 +127,14 @@ export async function grantFinancialVisaAction(
   batchId: string,
   notes?: string
 ): Promise<WorkflowResult> {
+  const currentBatch = await prisma.payrollBatch.findUnique({
+    where: { id: batchId },
+    select: { status: true },
+  });
+  if (currentBatch?.status === "ACCOUNTING_VALIDATED") {
+    const takeRes = await takeFinancialControlAction(batchId);
+    if (!takeRes.success) return takeRes;
+  }
   return executeTransition({ batchId, action: "GRANT_FINANCIAL_VISA", reason: notes });
 }
 
@@ -103,6 +143,14 @@ export async function returnByFinancialAction(
   batchId: string,
   reason: string
 ): Promise<WorkflowResult> {
+  const currentBatch = await prisma.payrollBatch.findUnique({
+    where: { id: batchId },
+    select: { status: true },
+  });
+  if (currentBatch?.status === "ACCOUNTING_VALIDATED") {
+    const takeRes = await takeFinancialControlAction(batchId);
+    if (!takeRes.success) return takeRes;
+  }
   return executeTransition({ batchId, action: "RETURN_BY_FINANCIAL", reason });
 }
 
