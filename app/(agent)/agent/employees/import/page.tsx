@@ -5,7 +5,7 @@ import { ImportClient } from "@/components/agent/employees/ImportClient";
 import { Upload, ArrowRight, ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "استيراد الموظفين من ملف Excel — مساحة الموارد البشرية — UNI-PAY",
+  title: "استيراد الموظفين من ملف Excel — مساحة الموارد البشرية — أكاديميا شفاف",
   description: "استيراد جماعي لملفات الموظفين وقواعد التحقق المسبقة",
 };
 

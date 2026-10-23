@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "محرك احتساب الأجور — مساحة الموارد البشرية — UNI-PAY",
+  title: "محرك احتساب الأجور — مساحة الموارد البشرية — أكاديميا شفاف",
   description: "تشغيل محرك الاحتساب وتثبيت كشوف الرواتب للدفعة",
 };
 

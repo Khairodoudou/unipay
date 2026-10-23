@@ -6,8 +6,8 @@ import { EmployeeForm } from "@/components/agent/employees/EmployeeForm";
 import { UserPlus, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "إضافة موظف جديد — مساحة الموارد البشرية — UNI-PAY",
-  description: "تسجيل موظف جديد في النظام بقاعدة بيانات UNI-PAY",
+  title: "إضافة موظف جديد — مساحة الموارد البشرية — أكاديميا شفاف",
+  description: "تسجيل موظف جديد في النظام بقاعدة بيانات أكاديميا شفاف",
 };
 
 export default async function NewEmployeePage() {

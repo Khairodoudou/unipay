@@ -10,6 +10,7 @@ import {
   BadgeAlert,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface WorkspacePlaceholderProps {
   user: UserSessionData;
@@ -29,12 +30,18 @@ export function WorkspacePlaceholder({
           {/* Logo & University Identity */}
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 focus-ring rounded-lg">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 via-blue-600 to-uni-navy flex items-center justify-center text-white font-extrabold text-base shadow-sm">
-                U
+              <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm border border-slate-200 shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt="شعار أكاديميا شفاف"
+                  width={36}
+                  height={36}
+                  className="h-full w-full object-contain"
+                />
               </div>
               <div>
                 <span className="text-base font-extrabold text-uni-navy tracking-tight leading-none block">
-                  UNI-PAY
+                  أكاديميا شفاف
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium leading-none block mt-0.5">
                   {user.organizationName}
@@ -137,7 +144,7 @@ export function WorkspacePlaceholder({
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                تم بنجاح إرساء البنية التحتية الصلبة لمنصة <strong className="text-uni-navy">UNI-PAY</strong>. 
+                تم بنجاح إرساء البنية التحتية الصلبة لمنصة <strong className="text-uni-navy">أكاديميا شفاف</strong>. 
                 تم التحقق من هويتك المهنية وصلاحياتك المحددة وفق نظام الرقابة على الأدوار (RBAC). 
                 سيتم تطوير لوحات القيادة التفاعلية والميزات التنفيذية في المراحل اللاحقة وفق دفتر الشروط.
               </div>

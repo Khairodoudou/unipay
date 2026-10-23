@@ -10,7 +10,7 @@ interface ComptableEntriesPageProps {
 }
 
 export const metadata: Metadata = {
-  title: "القيود المحاسبية — المحاسب المالي — UNI-PAY",
+  title: "القيود المحاسبية — المحاسب المالي — أكاديميا شفاف",
 };
 
 export default async function ComptableEntriesPage({

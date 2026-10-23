@@ -8,7 +8,7 @@ import {
 import { Stamp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "سجل التأشيرات المالية — المراقب المالي — UNI-PAY",
+  title: "سجل التأشيرات المالية — المراقب المالي — أكاديميا شفاف",
   description: "تتبع زمني لكافة التأشيرات والقرارات المالية مع أدوات التصفية والبحث المتقدم",
 };
 

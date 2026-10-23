@@ -4,7 +4,7 @@ import prisma from "@/lib/db/prisma";
 import { ChefBatchesTable, SerializedBatch } from "@/components/chef/batches/ChefBatchesTable";
 
 export const metadata: Metadata = {
-  title: "دفعات الأجور — رئيس المصلحة — UNI-PAY",
+  title: "دفعات الأجور — رئيس المصلحة — أكاديميا شفاف",
   description: "قائمة وتصفية دفعات الأجور للمراجعة والمصادقة",
 };
 

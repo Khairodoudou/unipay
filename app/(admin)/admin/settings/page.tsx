@@ -5,7 +5,7 @@ import { SettingsTabsForm } from "@/components/admin/settings/SettingsTabsForm";
 import { Settings as SettingsIcon } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "إعدادات النظام — UNI-PAY",
+  title: "إعدادات النظام — أكاديميا شفاف",
   description: "التحكم في الإعدادات العامة، سياسات الأمان وتفضيلات العرض",
 };
 

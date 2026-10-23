@@ -17,7 +17,7 @@ interface DirecteurBatchDetailPageProps {
 }
 
 export const metadata: Metadata = {
-  title: "المصادقة الإدارية على الدفعة — مدير المؤسسة — UNI-PAY",
+  title: "المصادقة الإدارية على الدفعة — مدير المؤسسة — أكاديميا شفاف",
 };
 
 export default async function DirecteurBatchDetailPage({

@@ -21,7 +21,7 @@ export async function verifyPassword(
 }
 
 /**
- * Politique minimale de mot de passe UNI-PAY (au moins 8 caractères).
+ * Politique minimale de mot de passe أكاديميا شفاف (au moins 8 caractères).
  */
 export function validatePasswordPolicy(password: string): {
   valid: boolean;

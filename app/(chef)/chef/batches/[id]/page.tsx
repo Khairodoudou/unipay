@@ -17,7 +17,7 @@ interface ChefBatchDetailPageProps {
 }
 
 export const metadata: Metadata = {
-  title: "مراجعة ومصادقة دفعة الأجور — رئيس المصلحة — UNI-PAY",
+  title: "مراجعة ومصادقة دفعة الأجور — رئيس المصلحة — أكاديميا شفاف",
 };
 
 export default async function ChefBatchDetailPage({

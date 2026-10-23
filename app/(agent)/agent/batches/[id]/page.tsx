@@ -24,7 +24,7 @@ import { StatusBadge } from "@/components/workflow/StatusBadge";
 import { CreateCorrectionVersionButton } from "@/components/agent/payroll/CreateCorrectionVersionButton";
 
 export const metadata: Metadata = {
-  title: "تفاصيل دفعة الأجر — مساحة الموارد البشرية — UNI-PAY",
+  title: "تفاصيل دفعة الأجر — مساحة الموارد البشرية — أكاديميا شفاف",
   description: "إدارة الموظفين والبيانات التشغيلية لدفعة الأجر",
 };
 

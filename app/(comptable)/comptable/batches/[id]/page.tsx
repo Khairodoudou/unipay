@@ -17,7 +17,7 @@ interface ComptableBatchDetailPageProps {
 }
 
 export const metadata: Metadata = {
-  title: "التأشير المحاسبي للدفعة — المحاسب المالي — UNI-PAY",
+  title: "التأشير المحاسبي للدفعة — المحاسب المالي — أكاديميا شفاف",
 };
 
 export default async function ComptableBatchDetailPage({

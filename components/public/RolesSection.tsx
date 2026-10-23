@@ -73,7 +73,7 @@ export default function RolesSection() {
     <section
       id="roles"
       className="bg-white py-20 lg:py-28 relative overflow-hidden"
-      aria-label="من يستخدم UNI-PAY"
+      aria-label="من يستخدم أكاديميا شفاف"
     >
       <div className="container-uni px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -83,7 +83,7 @@ export default function RolesSection() {
             أصحاب المصلحة
           </span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight">
-            من يستخدم منصة UNI-PAY؟
+            من يستخدم منصة أكاديميا شفاف؟
           </h2>
           <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
             توفر المنصة تجربة استخدام مخصصة وصلاحيات محددة بدقة لكل فاعل في المنظومة الجامعية.

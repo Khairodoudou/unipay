@@ -5,8 +5,8 @@ import { RolesGrid } from "@/components/admin/roles/RolesGrid";
 import { ShieldCheck, Info } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "الأدوار والصلاحيات — UNI-PAY",
-  description: "الأدوار المؤسسية السبعة المعتمدة في منصة UNI-PAY ومصفوفة الصلاحيات",
+  title: "الأدوار والصلاحيات — أكاديميا شفاف",
+  description: "الأدوار المؤسسية السبعة المعتمدة في منصة أكاديميا شفاف ومصفوفة الصلاحيات",
 };
 
 export default async function AdminRolesPage() {

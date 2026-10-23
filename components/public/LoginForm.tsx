@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Mail,
@@ -121,12 +122,19 @@ export default function LoginForm() {
                   <span>المنصة الرقمية الموحدة</span>
                 </span>
                 <div className="flex items-center gap-3 mt-4">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-400 via-blue-600 to-indigo-600 flex items-center justify-center font-extrabold text-xl shadow-lg shadow-blue-900/30">
-                    U
+                  <div className="w-12 h-12 rounded-2xl bg-white p-1.5 flex items-center justify-center shadow-lg shadow-blue-950/40 border border-white/20 shrink-0">
+                    <Image
+                      src="/images/logo.png"
+                      alt="شعار أكاديميا شفاف"
+                      width={48}
+                      height={48}
+                      className="h-full w-full object-contain"
+                      priority
+                    />
                   </div>
                   <div>
                     <h2 className="text-2xl font-extrabold text-white tracking-tight leading-none">
-                      UNI-PAY
+                      أكاديميا شفاف
                     </h2>
                     <p className="text-xs text-slate-300 mt-1">
                       نظام تسيير ومعالجة أجور موظفي الجامعة
@@ -200,7 +208,7 @@ export default function LoginForm() {
                   تسجيل الدخول إلى الحساب
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
-                  مرحباً بك في منصة UNI-PAY
+                  مرحباً بك في منصة أكاديميا شفاف
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed">
                   أدخل بيانات اعتمادك المهنية المعتمدة للوصول إلى مساحة العمل الخاصة بدورك الوظيفي.
@@ -428,7 +436,7 @@ export default function LoginForm() {
 
         {/* Legal Disclaimer */}
         <p className="mt-6 text-center text-xs text-slate-400">
-          منصة UNI-PAY المؤسسية — وزارة التعليم العالي والبحث العلمي © 2026. جميع الحقوق محفوظة.
+          منصة أكاديميا شفاف المؤسسية — وزارة التعليم العالي والبحث العلمي © 2026. جميع الحقوق محفوظة.
         </p>
       </div>
     </div>

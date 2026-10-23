@@ -5,7 +5,7 @@ export default function CTASection() {
   return (
     <section
       className="relative py-20 lg:py-24 overflow-hidden bg-[#0b1528] text-white"
-      aria-label="ابدأ باستخدام UNI-PAY"
+      aria-label="ابدأ باستخدام أكاديميا شفاف"
       style={{ backgroundColor: "#0b1528" }}
     >
       {/* Background ambient lighting */}
@@ -26,12 +26,12 @@ export default function CTASection() {
 
           {/* Heading */}
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight mb-5">
-            الوصول إلى المنصة المؤسسية UNI-PAY
+            الوصول إلى المنصة المؤسسية أكاديميا شفاف
           </h2>
 
           {/* Description */}
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8 max-w-2xl mx-auto">
-            منصة UNI-PAY مخصصة للمؤسسات الجامعية والهياكل الإدارية والمالية المعتمدة.
+            منصة أكاديميا شفاف مخصصة للمؤسسات الجامعية والهياكل الإدارية والمالية المعتمدة.
             الولوج إلى المنصة يتم حصرياً عبر البريد الإلكتروني المهني والحسابات المفعلة من طرف إدارة الجامعة.
           </p>
 

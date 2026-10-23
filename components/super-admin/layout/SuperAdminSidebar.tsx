@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -74,13 +75,19 @@ export function SuperAdminSidebar({ user }: SuperAdminSidebarProps) {
           className="flex items-center gap-3 focus-ring rounded-xl group"
           onClick={() => setMobileOpen(false)}
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-700 to-purple-900 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-indigo-950/50 group-hover:scale-105 transition-transform border border-indigo-400/30">
-            DZ
+          <div className="w-10 h-10 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-lg shadow-indigo-950/50 group-hover:scale-105 transition-transform border border-white/10 shrink-0">
+            <Image
+              src="/images/logo.png"
+              alt="أكاديميا شفاف"
+              width={40}
+              height={40}
+              className="h-full w-full object-contain"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-black tracking-tight text-white">
-                UNI-PAY
+                أكاديميا شفاف
               </span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
                 مركزي
@@ -189,7 +196,7 @@ export function SuperAdminSidebar({ user }: SuperAdminSidebarProps) {
             DZ
           </div>
           <div>
-            <span className="text-sm font-black">UNI-PAY</span>
+            <span className="text-sm font-black">أكاديميا شفاف</span>
             <span className="mr-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-900 text-indigo-200">
               مركزي
             </span>

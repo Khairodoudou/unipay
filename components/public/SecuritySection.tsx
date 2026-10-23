@@ -68,7 +68,7 @@ export default function SecuritySection() {
                 أمان مصمّم لمتطلبات الإدارة العمومية
               </h2>
               <p className="mt-4 text-slate-600 text-sm sm:text-base leading-relaxed">
-                تطبق <strong className="text-uni-navy font-semibold">UNI-PAY</strong> أعلى معايير الحوكمة والأمن السيبراني لحماية المال العام والبيانات الوظيفية الحساسة.
+                تطبق <strong className="text-uni-navy font-semibold">أكاديميا شفاف</strong> أعلى معايير الحوكمة والأمن السيبراني لحماية المال العام والبيانات الوظيفية الحساسة.
               </p>
             </div>
 

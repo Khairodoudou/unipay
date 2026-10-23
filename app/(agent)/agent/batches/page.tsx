@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "دفعات الأجور — مساحة الموارد البشرية — UNI-PAY",
+  title: "دفعات الأجور — مساحة الموارد البشرية — أكاديميا شفاف",
   description: "متابعة وإدارة دفعات الأجور ومسيرات الرواتب",
 };
 

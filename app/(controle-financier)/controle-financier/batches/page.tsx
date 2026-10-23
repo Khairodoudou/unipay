@@ -7,7 +7,7 @@ import {
 } from "@/components/controle-financier/batches/ControleurBatchesTable";
 
 export const metadata: Metadata = {
-  title: "جداول الرواتب — الرقابة المالية — UNI-PAY",
+  title: "جداول الرواتب — الرقابة المالية — أكاديميا شفاف",
   description: "متابعة ودراسة التأشيرات المالية لجداول الرواتب مع أدوات التصفية والبحث المتقدم",
 };
 

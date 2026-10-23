@@ -84,7 +84,7 @@ export function ImportClient({ organizationId }: ImportClientProps) {
         <table>
           <tr>
             <td colspan="15" class="header-banner">
-              نموذج استيراد الموظفين الرسمي — مساحة الموارد البشرية UNI-PAY (الحقول الإلزامية: الرقم الوظيفي، الاسم، اللقب، الراتب الأساسي)
+              نموذج استيراد الموظفين الرسمي — مساحة الموارد البشرية أكاديميا شفاف (الحقول الإلزامية: الرقم الوظيفي، الاسم، اللقب، الراتب الأساسي)
             </td>
           </tr>
           <thead>
@@ -630,7 +630,7 @@ export function ImportClient({ organizationId }: ImportClientProps) {
         <table>
           <tr>
             <td colspan="10" style="font-size: 14px; font-weight: bold; text-align: center; padding: 12px; background-color: #f0fdfa; color: #0f766e;">
-              تقرير معاينة استيراد الموظفين — UNI-PAY (${exportDate}) — إجمالي السجلات: ${dataToExport.length}
+              تقرير معاينة استيراد الموظفين — أكاديميا شفاف (${exportDate}) — إجمالي السجلات: ${dataToExport.length}
             </td>
           </tr>
           <thead>

@@ -8,7 +8,7 @@ import {
 import { History } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "سجل العمليات المحاسبية — المحاسب المالي — UNI-PAY",
+  title: "سجل العمليات المحاسبية — المحاسب المالي — أكاديميا شفاف",
   description: "تتبع زمني لكافة التأشيرات والقرارات المحاسبية مع أدوات التصفية والبحث",
 };
 

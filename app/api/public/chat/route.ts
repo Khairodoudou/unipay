@@ -4,8 +4,8 @@ import { getGeminiClient, PREFERRED_GEMINI_MODELS } from "@/lib/ai/gemini";
 export const runtime = "nodejs";
 
 const SYSTEM_PROMPT = `
-أنت "المساعد الذكي الرسمي لمنصة UNI-PAY" (UNI-PAY Assistant).
-منصة UNI-PAY هي المنصة الرقمية الوطنية المتكاملة لتسيير ومعالجة أجور موظفي وأساتذة مؤسسات التعليم العالي والبحث العلمي بالجمهورية الجزائرية الديمقراطية الشعبية.
+أنت "المساعد الذكي الرسمي لمنصة أكاديميا شفاف" (أكاديميا شفاف Assistant).
+منصة أكاديميا شفاف هي المنصة الرقمية الوطنية المتكاملة لتسيير ومعالجة أجور موظفي وأساتذة مؤسسات التعليم العالي والبحث العلمي بالجمهورية الجزائرية الديمقراطية الشعبية.
 
 مهامك:
 1. مساعدة زوار المنصة والأساتذة والموظفين الإداريين والتقنيين والمسؤولين في فهم خصائص المنصة وخدماتها.
@@ -19,7 +19,7 @@ const SYSTEM_PROMPT = `
    - إجاباتك يجب أن تكون مختصرة ومفيدة (Concise & Professional).
    - استخدم التنسيق النقطي (Bullet points) والعناوين البارزة.
    - لا تفصح أبداً عن أي بيانات سرية أو مفاتيح برمجية.
-   - إذا سألك المستخدم سؤالاً خارج نطاق المنصة، أجب بلطف ووجهه لما يخص منصة UNI-PAY والرواتب الجامعية.
+   - إذا سألك المستخدم سؤالاً خارج نطاق المنصة، أجب بلطف ووجهه لما يخص منصة أكاديميا شفاف والرواتب الجامعية.
 `;
 
 // Moteur de secours intelligent si l'API externe est saturée
@@ -27,7 +27,7 @@ function getDeterministicFallback(userMessage: string): string {
   const lower = userMessage.toLowerCase();
 
   if (lower.includes("كشف") || lower.includes("راتب") || lower.includes("fiche") || lower.includes("bulletin") || lower.includes("payslip")) {
-    return `📄 **استخراج كشف الراتب الشهري عبر منصة UNI-PAY:**
+    return `📄 **استخراج كشف الراتب الشهري عبر منصة أكاديميا شفاف:**
 
 • يمكنك الاطلاع على كشف الراتب وتحميله بصيغة PDF رسمية من خلال **فضاء الموظف** (Espace Employé).
 • **الخطوات:**
@@ -46,7 +46,7 @@ function getDeterministicFallback(userMessage: string): string {
   }
 
   if (lower.includes("دور") || lower.includes("أدوار") || lower.includes("صلاحيات") || lower.includes("role") || lower.includes("من يستعمل")) {
-    return `👥 **الأدوار المؤسسية في منصة UNI-PAY:**
+    return `👥 **الأدوار المؤسسية في منصة أكاديميا شفاف:**
 
 1. **عون الموارد البشرية (Agent RH):** إعداد مسيرة الرواتب الشهرية ومتابعة الحضور والغيابات.
 2. **رئيس المصلحة (Chef de Service):** التدقيق الأولي والمصادقة على عناصر الأجر.
@@ -58,7 +58,7 @@ function getDeterministicFallback(userMessage: string): string {
   }
 
   if (lower.includes("irg") || lower.includes("cnas") || lower.includes("ضمان") || lower.includes("ضريبة") || lower.includes("حساب") || lower.includes("calcul")) {
-    return `🧮 **قواعد الحساب المالي في منصة UNI-PAY:**
+    return `🧮 **قواعد الحساب المالي في منصة أكاديميا شفاف:**
 
 • المنصة مبرمجة ومضبوطة وفقاً للتشريع المالي الجزائري وقوانين الوظيف العمومي:
   - **الراتب الأساسي:** محسوب على أساس النقطة الاستدلالية (قيمة النقطة = 45 دج).
@@ -67,7 +67,7 @@ function getDeterministicFallback(userMessage: string): string {
   - **المنح والعلاوات:** حساب دقيق لمنحة الخبرة المهنية (IEP)، منحة المردودية والتعويضات النظامية.`;
   }
 
-  return `مرحباً بك في **منصة UNI-PAY**! 🎓
+  return `مرحباً بك في **منصة أكاديميا شفاف**! 🎓
 
 أنا مساعدك الذكي للإجابة عن جميع استفساراتك حول المنصة الوطنية لتسيير رواتب قطاع التعليم العالي والبحث العلمي بالجزائر.
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
             },
             {
               role: "model",
-              parts: [{ text: "فهمت تعليمات الهوية المؤسسية لمنصة UNI-PAY وسأجيب بدقة واحترافية وفق الأنظمة الجزائرية." }],
+              parts: [{ text: "فهمت تعليمات الهوية المؤسسية لمنصة أكاديميا شفاف وسأجيب بدقة واحترافية وفق الأنظمة الجزائرية." }],
             },
             {
               role: "user",

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ShieldCheck,
   ChevronLeft,
@@ -60,12 +61,18 @@ export default function Footer() {
 
             {/* Platform Brand */}
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 via-blue-600 to-indigo-700 text-white font-extrabold text-xl shadow-md shadow-blue-900/30">
-                U
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white p-1.5 shadow-md border border-white/10 shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt="شعار أكاديميا شفاف"
+                  width={48}
+                  height={48}
+                  className="h-full w-full object-contain"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-extrabold text-white tracking-tight leading-none">
-                  UNI-PAY
+                  أكاديميا شفاف
                 </span>
                 <span className="text-xs font-medium text-slate-400 mt-1">
                   وزارة التعليم العالي والبحث العلمي
@@ -220,7 +227,7 @@ export default function Footer() {
         <div className="pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-slate-500">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <p>
-              © 2026 <strong className="text-slate-400 font-semibold">UNI-PAY</strong> — وزارة التعليم العالي والبحث العلمي · الجمهورية الجزائرية الديمقراطية الشعبية.
+              © 2026 <strong className="text-slate-400 font-semibold">أكاديميا شفاف</strong> — وزارة التعليم العالي والبحث العلمي · الجمهورية الجزائرية الديمقراطية الشعبية.
             </p>
           </div>
 

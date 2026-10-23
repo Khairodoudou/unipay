@@ -176,7 +176,7 @@ export async function analyzeFindingWithAI(
   }
 
   // Prompt institutionnel strict
-  const systemInstruction = `أنت مساعد تدقيق ذكي متخصص في نظام الأجور الجامعي الجزائري UNI-PAY.
+  const systemInstruction = `أنت مساعد تدقيق ذكي متخصص في نظام الأجور الجامعي الجزائري أكاديميا شفاف.
 مهمتك تحليل الملاحظة الرقابية المقدمة وتوضيح أسبابها المحتملة وتوجيه المراجع البشري.
 
 قواعد صارمة لا تقبل الاستثناء:

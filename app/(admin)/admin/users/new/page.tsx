@@ -6,8 +6,8 @@ import { UserCreateForm } from "@/components/admin/users/UserCreateForm";
 import { UserPlus, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "إضافة مستخدم جديد — UNI-PAY",
-  description: "إنشاء حساب مستخدم جديد وتحديد دوره الوظيفي في منصة UNI-PAY",
+  title: "إضافة مستخدم جديد — أكاديميا شفاف",
+  description: "إنشاء حساب مستخدم جديد وتحديد دوره الوظيفي في منصة أكاديميا شفاف",
 };
 
 export default async function NewUserPage() {

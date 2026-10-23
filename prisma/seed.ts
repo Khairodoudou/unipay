@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 const BCRYPT_ROUNDS = 12;
 
-// Rôles institutionnels UNI-PAY
+// Rôles institutionnels أكاديميا شفاف
 const ROLES_DATA = [
   {
     code: "ADMIN",
@@ -179,7 +179,7 @@ const ROLE_PERMISSIONS_MAP: Record<string, string[]> = {
 };
 
 async function main() {
-  console.log("🌱 [UNI-PAY] Démarrage du seed de la base de données...");
+  console.log("🌱 [أكاديميا شفاف] Démarrage du seed de la base de données...");
 
   // 1. Organisation initiale
   const organization = await prisma.organization.upsert({
@@ -499,7 +499,7 @@ async function main() {
   const systemSettings = [
     {
       key: "PLATFORM_NAME",
-      value: "UNI-PAY — المنصة الرقمية للأجور الجامعية",
+      value: "أكاديميا شفاف — المنصة الرقمية للأجور الجامعية",
       category: "GENERAL",
       labelAr: "اسم المنصة",
       descriptionAr: "الاسم الرسمي الظاهر في ترويسة المنصة والمراسلات",
@@ -665,11 +665,11 @@ async function main() {
       userId: adminUser.id,
       action: "LOGIN_SUCCESS",
       resourceType: "SYSTEM_INIT",
-      details: JSON.stringify({ message: "Initialisation et seed de la base UNI-PAY Phase 3 réussis" }),
+      details: JSON.stringify({ message: "Initialisation et seed de la base أكاديميا شفاف Phase 3 réussis" }),
     },
   });
 
-  console.log("🚀 [UNI-PAY] Seed complété avec succès !");
+  console.log("🚀 [أكاديميا شفاف] Seed complété avec succès !");
 }
 
 main()

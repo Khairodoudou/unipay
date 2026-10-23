@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "لوحة التحكم الإدارية — UNI-PAY",
-  description: "مؤشرات إدارة النظام والمستخدمين والرقابة لمنصة UNI-PAY",
+  title: "لوحة التحكم الإدارية — أكاديميا شفاف",
+  description: "مؤشرات إدارة النظام والمستخدمين والرقابة لمنصة أكاديميا شفاف",
 };
 
 // Computed at module load — satisfies react-hooks/purity (not inside render)

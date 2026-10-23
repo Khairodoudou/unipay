@@ -11,7 +11,7 @@ interface ChefBatchAuditPageProps {
 }
 
 export const metadata: Metadata = {
-  title: "تقرير التدقيق الذكي — رئيس المصلحة — UNI-PAY",
+  title: "تقرير التدقيق الذكي — رئيس المصلحة — أكاديميا شفاف",
 };
 
 export default async function ChefBatchAuditPage({

@@ -17,7 +17,7 @@ import {
 import { FindingType, FindingSeverity, FindingStatus } from "@/lib/audit/types";
 
 export const metadata: Metadata = {
-  title: "التدقيق الذكي للدفعة — مساحة الموارد البشرية — UNI-PAY",
+  title: "التدقيق الذكي للدفعة — مساحة الموارد البشرية — أكاديميا شفاف",
   description: "الكشف الآلي عن الشذوذ والملاحظات والتحليل المعزز بالذكاء الاصطناعي",
 };
 

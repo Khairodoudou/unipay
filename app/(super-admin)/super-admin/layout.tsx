@@ -4,7 +4,7 @@ import { SuperAdminSidebar } from "@/components/super-admin/layout/SuperAdminSid
 import { SuperAdminHeader } from "@/components/super-admin/layout/SuperAdminHeader";
 
 export const metadata = {
-  title: "UNI-PAY — الإدارة المركزية الوطنية",
+  title: "أكاديميا شفاف — الإدارة المركزية الوطنية",
   description: "منصة تسيير أجور الجامعات الجزائرية — الإشراف المركزي والحوكمة الوطنية",
 };
 

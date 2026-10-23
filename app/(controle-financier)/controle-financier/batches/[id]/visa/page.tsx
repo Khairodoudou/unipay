@@ -12,7 +12,7 @@ interface ControleurVisaPageProps {
 }
 
 export const metadata: Metadata = {
-  title: "بطاقة التأشيرة المالية — المراقب المالي — UNI-PAY",
+  title: "بطاقة التأشيرة المالية — المراقب المالي — أكاديميا شفاف",
   description: "بطاقة الالتزام المالي والتأشيرة المسبقة لنفقات المستخدمين والأجور",
 };
 
@@ -242,7 +242,7 @@ export default async function ControleurVisaPage({
 
         {/* Bas de page officiel */}
         <div className="text-center text-[10px] text-slate-400 border-t border-slate-200 pt-3">
-          وثيقة رسمية صادرة وموثقة آلياً عبر نظام UNI-PAY للرقابة المالية المسبقة وتسيير أجور مؤسسات التعليم العالي
+          وثيقة رسمية صادرة وموثقة آلياً عبر نظام أكاديميا شفاف للرقابة المالية المسبقة وتسيير أجور مؤسسات التعليم العالي
         </div>
       </div>
     </div>

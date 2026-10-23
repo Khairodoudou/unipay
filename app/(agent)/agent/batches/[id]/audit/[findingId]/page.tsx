@@ -6,7 +6,7 @@ import { FindingDetailClient } from "@/components/agent/audit/FindingDetailClien
 import { FindingType, FindingSeverity, FindingStatus } from "@/lib/audit/types";
 
 export const metadata: Metadata = {
-  title: "تفاصيل الملاحظة الرقابية — التدقيق الذكي — UNI-PAY",
+  title: "تفاصيل الملاحظة الرقابية — التدقيق الذكي — أكاديميا شفاف",
   description: "معاينة الخلل المرصود والتحليل الاستشاري بالذكاء الاصطناعي واتخاذ القرار البشري",
 };
 

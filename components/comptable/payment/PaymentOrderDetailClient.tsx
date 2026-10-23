@@ -192,7 +192,7 @@ export function PaymentOrderDetailClient({
         <div>
           <p className="font-bold">تنبيه قانوني ومؤسساتي</p>
           <p className="text-xs text-amber-800 mt-0.5">
-            تصدير تقني عام UNI-PAY — غير مُقدَّم كصيغة بنكية رسمية (GENERIC_BANK_TRANSFER). لا يتم إجراء أي تحويل بنكي آلي مباشر دون معالجة محاسبية ومصرفية خارجية معتمدة.
+            تصدير تقني عام أكاديميا شفاف — غير مُقدَّم كصيغة بنكية رسمية (GENERIC_BANK_TRANSFER). لا يتم إجراء أي تحويل بنكي آلي مباشر دون معالجة محاسبية ومصرفية خارجية معتمدة.
           </p>
         </div>
       </div>

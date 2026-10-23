@@ -10,9 +10,9 @@ import CTASection from "@/components/public/CTASection";
 import Footer from "@/components/public/Footer";
 
 export const metadata: Metadata = {
-  title: "UNI-PAY — منصة تسيير أجور موظفي الجامعة",
+  title: "أكاديميا شفاف — منصة تسيير أجور موظفي الجامعة",
   description:
-    "UNI-PAY منصة رقمية متكاملة لتسيير ومعالجة أجور موظفي الجامعة — إعداد، تدقيق، مصادقة، رقابة ومتابعة.",
+    "أكاديميا شفاف منصة رقمية متكاملة لتسيير ومعالجة أجور موظفي الجامعة — إعداد، تدقيق، مصادقة، رقابة ومتابعة.",
 };
 
 export default function HomePage() {

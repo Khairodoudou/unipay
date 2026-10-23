@@ -5,8 +5,8 @@ import { ScrollText, ShieldAlert, User, Clock, Search } from "lucide-react";
 import { Prisma } from "@prisma/client";
 
 export const metadata: Metadata = {
-  title: "سجل التدقيق والرقابة — UNI-PAY",
-  description: "سجل شامل لجميع الأحداث الإدارية والأمنية في منصة UNI-PAY",
+  title: "سجل التدقيق والرقابة — أكاديميا شفاف",
+  description: "سجل شامل لجميع الأحداث الإدارية والأمنية في منصة أكاديميا شفاف",
 };
 
 interface AuditLogsPageProps {

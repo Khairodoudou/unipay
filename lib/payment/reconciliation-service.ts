@@ -1,6 +1,6 @@
 /**
  * lib/payment/reconciliation-service.ts
- * Service de rapprochement des paiements — Phase 8 UNI-PAY.
+ * Service de rapprochement des paiements — Phase 8 أكاديميا شفاف.
  *
  * Priorité de rapprochement :
  * 1. Référence de transaction (TX-...)

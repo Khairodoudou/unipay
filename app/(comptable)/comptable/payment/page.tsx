@@ -4,7 +4,7 @@ import prisma from "@/lib/db/prisma";
 import { PaymentDashboardClient } from "@/components/comptable/payment/PaymentDashboardClient";
 
 export const metadata: Metadata = {
-  title: "إدارة أوامر الدفع — المحاسب المالي — UNI-PAY",
+  title: "إدارة أوامر الدفع — المحاسب المالي — أكاديميا شفاف",
   description: "الإطار المحاسبي لإدارة أوامر الدفع وتتبع حالة التسوية",
 };
 

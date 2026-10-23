@@ -1,6 +1,6 @@
 /**
  * lib/payment/payment-service.ts
- * Service central du module de paiement Phase 8 — UNI-PAY.
+ * Service central du module de paiement Phase 8 — أكاديميا شفاف.
  *
  * RÈGLES ABSOLUES :
  * 1. Toutes les données viennent de la DB (jamais du client).
@@ -8,7 +8,7 @@
  * 3. Le RIB vient de Employee.rib (DB) — jamais du frontend.
  * 4. Chaque opération est atomique (prisma.$transaction).
  * 5. Protection anti-concurrence par updateMany conditionnel.
- * 6. UNI-PAY ne prétend effectuer aucun virement bancaire réel.
+ * 6. أكاديميا شفاف ne prétend effectuer aucun virement bancaire réel.
  */
 
 import { Decimal } from "@prisma/client/runtime/library";

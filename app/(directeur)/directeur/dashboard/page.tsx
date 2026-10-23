@@ -14,7 +14,7 @@ import {
 import { StatusBadge } from "@/components/workflow/StatusBadge";
 
 export const metadata: Metadata = {
-  title: "لوحة القيادة الإدارية — مدير المؤسسة — UNI-PAY",
+  title: "لوحة القيادة الإدارية — مدير المؤسسة — أكاديميا شفاف",
   description: "المصادقة التنفيذية ومتابعة الميزانية والأجور",
 };
 

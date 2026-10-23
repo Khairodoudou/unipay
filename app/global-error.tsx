@@ -11,7 +11,7 @@ export default function GlobalError({
   retry: () => void;
 }) {
   useEffect(() => {
-    console.error("[UNI-PAY] Global error:", error);
+    console.error("[أكاديميا شفاف] Global error:", error);
   }, [error]);
 
   return (
@@ -20,10 +20,15 @@ export default function GlobalError({
         <div className="max-w-md w-full text-center">
           {/* Logo */}
           <div className="inline-flex items-center gap-2 mb-8">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1e3a6e] text-white font-bold text-sm">
-              U
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white p-1 shadow-sm border border-slate-200 shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logo.png"
+                alt="شعار أكاديميا شفاف"
+                className="h-full w-full object-contain"
+              />
             </div>
-            <span className="text-lg font-bold text-[#1e3a6e]">UNI-PAY</span>
+            <span className="text-lg font-bold text-[#1e3a6e]">أكاديميا شفاف</span>
           </div>
 
           {/* Error visual */}

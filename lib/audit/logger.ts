@@ -99,7 +99,7 @@ export interface CreateAuditLogParams {
 }
 
 /**
- * Enregistre un événement dans le journal d'audit UNI-PAY.
+ * Enregistre un événement dans le journal d'audit أكاديميا شفاف.
  * RÈGLE DE SÉCURITÉ ABSOLUE : Ne jamais enregistrer de mot de passe ni de passwordHash.
  */
 export async function recordAuditLog(params: CreateAuditLogParams): Promise<void> {

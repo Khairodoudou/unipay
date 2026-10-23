@@ -26,7 +26,7 @@ export async function generatePayslipPdfBuffer(
       margin: 40,
       info: {
         Title: `Bulletin_Paie_${payslip.employee.matricule}_${payslip.year}_${payslip.month}`,
-        Author: payslip.employee.organizationName || "UNI-PAY",
+        Author: payslip.employee.organizationName || "أكاديميا شفاف",
         Subject: "Bulletin de paie mensuel certifié",
         Keywords: "bulletin, paie, unipay, universite",
         CreationDate: new Date(),
@@ -383,7 +383,7 @@ export async function generatePayslipPdfBuffer(
       .font("Helvetica")
       .fillColor("#64748b")
       .text(
-        "Ce document est certifié et généré électroniquement par le système de paie UNI-PAY. Il atteste de la régularité des décomptes validés par les instances de contrôle financier habilitées.",
+        "Ce document est certifié et généré électroniquement par le système de paie أكاديميا شفاف. Il atteste de la régularité des décomptes validés par les instances de contrôle financier habilitées.",
         startX,
         currentY,
         { width: pageWidth, align: "center" }

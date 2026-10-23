@@ -11,7 +11,7 @@ interface DirecteurAlertsPageProps {
 }
 
 export const metadata: Metadata = {
-  title: "التنبيهات والمخالفات الحرجة — مدير المؤسسة — UNI-PAY",
+  title: "التنبيهات والمخالفات الحرجة — مدير المؤسسة — أكاديميا شفاف",
 };
 
 export default async function DirecteurAlertsPage({

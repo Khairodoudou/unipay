@@ -13,7 +13,7 @@ import {
 import { StatusBadge } from "@/components/workflow/StatusBadge";
 
 export const metadata: Metadata = {
-  title: "تفاصيل أجر الموظف — رئيس المصلحة — UNI-PAY",
+  title: "تفاصيل أجر الموظف — رئيس المصلحة — أكاديميا شفاف",
   description: "مراجعة كشف تفصيلي لحسابات راتب الموظف والبنود المرتبطة به",
 };
 

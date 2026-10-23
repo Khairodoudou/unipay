@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "لوحة القيادة — مساحة الموارد البشرية والرواتب — UNI-PAY",
-  description: "مؤشرات إدارة الموظفين ومسيرات الرواتب لمنصة UNI-PAY",
+  title: "لوحة القيادة — مساحة الموارد البشرية والرواتب — أكاديميا شفاف",
+  description: "مؤشرات إدارة الموظفين ومسيرات الرواتب لمنصة أكاديميا شفاف",
 };
 
 export default async function AgentDashboardPage() {

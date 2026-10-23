@@ -94,7 +94,7 @@ export async function GET(
         "Cache-Control":       "no-store, no-cache, private",
         "X-File-Hash":         fileResult.fileHash,
         "X-Row-Count":         String(fileResult.rowCount),
-        "X-Disclaimer":        "UNI-PAY Generic Technical Export — Not an official bank format",
+        "X-Disclaimer":        "أكاديميا شفاف Generic Technical Export — Not an official bank format",
         "X-Content-Type-Options": "nosniff",
       },
     });

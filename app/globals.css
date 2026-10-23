@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─── UNI-PAY Design Tokens ─── */
+/* ─── أكاديميا شفاف Design Tokens ─── */
 @theme inline {
   /* Fonts */
   --font-sans: var(--font-noto-arabic);
@@ -44,7 +44,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
 
-  /* UNI-PAY brand colors */
+  /* أكاديميا شفاف brand colors */
   --color-uni-navy: #1e3a6e;
   --color-uni-navy-dark: #0b1528;
   --color-uni-blue: #2563eb;
@@ -101,7 +101,7 @@
   --sidebar-border: oklch(0.30 0.06 258);
   --sidebar-ring: oklch(0.55 0.18 258);
 
-  /* ── UNI-PAY Brand ── */
+  /* ── أكاديميا شفاف Brand ── */
   --uni-navy: #1e3a6e;
   --uni-navy-dark: #0b1528;
   --uni-blue: #2563eb;
@@ -177,7 +177,7 @@
   }
 }
 
-/* ─── UNI-PAY utilities ─── */
+/* ─── أكاديميا شفاف utilities ─── */
 @layer utilities {
   /* Text colors */
   .text-uni-navy { color: var(--uni-navy); }

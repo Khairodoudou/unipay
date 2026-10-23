@@ -1,217 +1,97 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound } from "next/navigation";
 import prisma from "@/lib/db/prisma";
 import { requireRole } from "@/lib/rbac/guards";
-import { PermissionMatrixForm } from "@/components/admin/roles/PermissionMatrixForm";
 import {
-  ArrowRight,
-  Users,
-  KeyRound,
-  ExternalLink,
-} from "lucide-react";
+  PayrollRulesTable,
+  CreatePayrollRuleForm,
+} from "@/components/admin/payroll-rules/PayrollRulesManager";
+import { Scale, Info } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "تفاصيل الدور والصلاحيات — UNI-PAY",
-  description: "معاينة وتخصيص صلاحيات الدور والمستخدمين المنتمين إليه",
+  title: "قواعد الأجور — أكاديميا شفاف",
+  description: "بنية قواعد الأجور القابلة للتهيئة والإصدار لمنصة أكاديميا شفاف",
 };
 
-interface RoleDetailPageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
+export default async function AdminPayrollRulesPage() {
+  await requireRole("ADMIN");
 
-export default async function RoleDetailPage({ params }: RoleDetailPageProps) {
-  const user = await requireRole(["ADMIN", "SUPER_ADMIN"]);
-  const { id } = await params;
-
-  const usersWhere = user.roleCode !== "SUPER_ADMIN" && user.organizationId
-    ? { organizationId: user.organizationId }
-    : undefined;
-
-  const permissionsWhere = user.roleCode !== "SUPER_ADMIN"
-    ? {
-        AND: [
-          { code: { not: { startsWith: "superadmin." } } },
-          { code: { not: { startsWith: "universities." } } },
-        ],
-      }
-    : undefined;
-
-  const [role, allPermissions] = await Promise.all([
-    prisma.role.findUnique({
-      where: { id },
-      include: {
-        rolePermissions: {
-          include: {
-            permission: true,
-          },
-        },
-        users: {
-          where: usersWhere,
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            isActive: true,
-            organization: { select: { name: true } },
-          },
-          orderBy: { createdAt: "desc" },
-        },
+  const rules = await prisma.payrollRule.findMany({
+    include: {
+      versions: {
+        orderBy: { versionNumber: "desc" },
       },
-    }),
-    prisma.permission.findMany({
-      where: permissionsWhere,
-      orderBy: { code: "asc" },
-      select: {
-        id: true,
-        code: true,
-        nameAr: true,
-        category: true,
-      },
-    }),
-  ]);
+    },
+    orderBy: [{ category: "asc" }, { createdAt: "asc" }],
+  });
 
-  if (!role) {
-    notFound();
-  }
+  // Sérialiser les dates pour les Client Components
+  const serializedRules = rules.map((rule) => ({
+    ...rule,
+    createdAt: rule.createdAt.toISOString(),
+    updatedAt: rule.updatedAt.toISOString(),
+    versions: rule.versions.map((v) => ({
+      ...v,
+      effectiveFrom: v.effectiveFrom.toISOString(),
+      effectiveTo: v.effectiveTo ? v.effectiveTo.toISOString() : null,
+      createdAt: v.createdAt.toISOString(),
+    })),
+  }));
 
-  // Protection hiérarchique : un administrateur local ne peut pas inspecter ou modifier le rôle SUPER_ADMIN
-  if (user.roleCode !== "SUPER_ADMIN" && role.code === "SUPER_ADMIN") {
-    notFound();
-  }
-
-  const initialCodes = role.rolePermissions.map((rp) => rp.permission.code);
+  const activeCount = rules.filter((r) => r.isActive).length;
+  const inactiveCount = rules.length - activeCount;
+  const totalVersions = rules.reduce((acc, r) => acc + r.versions.length, 0);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
         <div>
-          <Link
-            href="/admin/roles"
-            className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1 mb-1"
-          >
-            <ArrowRight className="w-3.5 h-3.5" />
-            <span>العودة لقائمة الأدوار</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              {role.nameAr}
-            </h1>
-            <code className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-200">
-              {role.code}
-            </code>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">
-            {role.descriptionAr || "دور نظام معتمد في المنصة."}
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
+            <Scale className="w-6 h-6 text-teal-600" />
+            <span>قواعد الأجور القابلة للتهيئة</span>
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            بنية تحتية لإدارة قواعد الحساب والمعاملات المرجعية مع تتبع التغييرات التاريخية
           </p>
         </div>
-      </div>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 block mb-0.5">
-              المستخدمون بهذا الدور
+        {/* Stats badges */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 text-teal-700 text-xs font-bold border border-teal-200">
+            {activeCount} نشطة
+          </span>
+          {inactiveCount > 0 && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200">
+              {inactiveCount} معطّلة
             </span>
-            <span className="text-xl font-black text-slate-900 font-mono">
-              {role.users.length}
-            </span>
-          </div>
-          <Users className="w-6 h-6 text-slate-400" />
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 block mb-0.5">
-              الصلاحيات الحالية
-            </span>
-            <span className="text-xl font-black text-teal-700 font-mono">
-              {initialCodes.length} من {allPermissions.length}
-            </span>
-          </div>
-          <KeyRound className="w-6 h-6 text-teal-600" />
-        </div>
-      </div>
-
-      {/* Permission Matrix Form */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-teal-600" />
-            <span>مصفوفة الصلاحيات الممنوحة</span>
-          </h2>
-          <span className="text-xs text-slate-400">
-            يمكن تفعيل أو إلغاء الصلاحيات حسب الحاجة
+          )}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">
+            {totalVersions} إصدار مسجّل
           </span>
         </div>
-
-        <PermissionMatrixForm
-          roleId={role.id}
-          roleCode={role.code}
-          allPermissions={allPermissions}
-          initialPermissionCodes={initialCodes}
-        />
       </div>
 
-      {/* Users Assigned to this Role */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <Users className="w-4 h-4 text-teal-600" />
-            <span>المستخدمون المسند إليهم هذا الدور ({role.users.length})</span>
-          </h3>
-        </div>
-
-        {role.users.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center py-4">
-            لا يوجد أي مستخدم مسند إليه هذا الدور حالياً.
+      {/* Legal Disclaimer */}
+      <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-amber-900 text-xs flex items-start gap-3">
+        <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="leading-relaxed space-y-1">
+          <p>
+            <strong className="font-bold">ملاحظة قانونية هامة:</strong> هذه الوحدة توفر بنية
+            تحتية لتهيئة قواعد الحساب وتتبع تاريخها. القيم المُدخلة هي قيم مرجعية داخلية تحتاج
+            للتحقق من مصادرها الرسمية (مراسيم، قرارات وزارية، قوانين المالية).
           </p>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {role.users.map((u) => (
-              <div
-                key={u.id}
-                className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between"
-              >
-                <div>
-                  <Link
-                    href={`/admin/users/${u.id}`}
-                    className="font-bold text-xs text-slate-900 hover:text-teal-700 block transition-colors"
-                  >
-                    {u.firstName} {u.lastName}
-                  </Link>
-                  <span className="text-[10px] text-slate-400 font-mono block">
-                    {u.email}
-                  </span>
-                  <span className="text-[10px] text-slate-500 block mt-0.5">
-                    {u.organization?.name || "المنصة المركزية الوطنية"}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      u.isActive ? "bg-emerald-500" : "bg-amber-500"
-                    }`}
-                    title={u.isActive ? "نشط" : "معطل"}
-                  />
-                  <Link
-                    href={`/admin/users/${u.id}`}
-                    className="p-1 rounded text-slate-400 hover:text-teal-700"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          <p>
+            لا تُمثّل أي قيمة في هذا النظام تصريحاً قانونياً بالامتثال للتشريعات الجزائرية
+            الجبائية أو الاجتماعية المعمول بها.
+          </p>
+        </div>
       </div>
+
+      {/* Create Form (Accordion) */}
+      <CreatePayrollRuleForm />
+
+      {/* Rules Table */}
+      <PayrollRulesTable rules={serializedRules} />
     </div>
   );
 }

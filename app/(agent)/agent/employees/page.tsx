@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "سجل الموظفين — مساحة الموارد البشرية — UNI-PAY",
-  description: "إدارة الموظفين والبيانات الإدارية والمالية لمنصة UNI-PAY",
+  title: "سجل الموظفين — مساحة الموارد البشرية — أكاديميا شفاف",
+  description: "إدارة الموظفين والبيانات الإدارية والمالية لمنصة أكاديميا شفاف",
 };
 
 interface EmployeesPageProps {

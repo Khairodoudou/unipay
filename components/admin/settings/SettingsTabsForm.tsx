@@ -152,7 +152,7 @@ export function SettingsTabsForm({ settings }: SettingsTabsFormProps) {
                 <input
                   type="text"
                   name="PLATFORM_NAME"
-                  defaultValue={getVal("PLATFORM_NAME", "UNI-PAY")}
+                  defaultValue={getVal("PLATFORM_NAME", "أكاديميا شفاف")}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-slate-50/60 focus:bg-white font-bold"
                 />
               </div>
@@ -323,7 +323,7 @@ export function SettingsTabsForm({ settings }: SettingsTabsFormProps) {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                 <span className="text-[11px] font-bold text-slate-400 block mb-1">
-                  إصدار UNI-PAY
+                  إصدار أكاديميا شفاف
                 </span>
                 <span className="text-sm font-black text-slate-900 font-mono">
                   v0.3.0 (Phase 3)

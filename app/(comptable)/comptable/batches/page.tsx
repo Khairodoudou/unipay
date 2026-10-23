@@ -8,7 +8,7 @@ import {
 import { Receipt } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "جداول الرواتب — المحاسب المالي — UNI-PAY",
+  title: "جداول الرواتب — المحاسب المالي — أكاديميا شفاف",
   description: "مراجعة وتأشير دفعات الأجور مع أدوات التصفية والبحث المتقدم",
 };
 

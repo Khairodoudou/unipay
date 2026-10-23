@@ -9,7 +9,7 @@ export default function Hero() {
     <section
       id="hero"
       className="relative min-h-screen flex items-center overflow-hidden gradient-hero bg-[#0b1528] pt-20 pb-16 lg:py-24"
-      aria-label="مقدمة UNI-PAY"
+      aria-label="مقدمة أكاديميا شفاف"
       style={{ backgroundColor: "#0b1528" }}
     >
       {/* Background dot matrix overlay */}
@@ -51,7 +51,7 @@ export default function Hero() {
 
             {/* Subtitle */}
             <p className="animate-fade-in-up animate-delay-200 text-base sm:text-lg leading-relaxed text-slate-300 max-w-2xl font-normal">
-              توحّد <strong className="text-white font-semibold">UNI-PAY</strong> كامل دورة إعداد الأجور:
+              توحّد <strong className="text-white font-semibold">أكاديميا شفاف</strong> كامل دورة إعداد الأجور:
               من استيراد البيانات والاحتساب التلقائي، إلى التدقيق الذكي للشذوذ،
               والمصادقة الإدارية، وصولاً إلى تأشيرة الرقابة المالية وإتاحة كشوف الرواتب — في بيئة مؤسسية آمنة وشفافة.
             </p>
@@ -141,7 +141,7 @@ function DashboardShowcase() {
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
             <span className="text-[11px] text-slate-300 font-mono ms-2">
-              UNI-PAY Platform
+              أكاديميا شفاف Platform
             </span>
           </div>
           <span className="inline-flex items-center gap-1.5 text-[11px] text-teal-300 font-semibold">
@@ -154,7 +154,7 @@ function DashboardShowcase() {
         <div className="relative overflow-hidden rounded-b-xl bg-slate-950">
           <Image
             src="/images/dashboard-preview.jpg"
-            alt="واجهة لوحة القيادة لمنصة UNI-PAY لتسيير أجور موظفي الجامعة"
+            alt="واجهة لوحة القيادة لمنصة أكاديميا شفاف لتسيير أجور موظفي الجامعة"
             width={1024}
             height={768}
             priority

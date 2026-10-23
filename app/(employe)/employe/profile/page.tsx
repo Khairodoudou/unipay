@@ -12,7 +12,7 @@ import {
 import { getEmployeeProfile } from "@/lib/employe/employe-service";
 
 export const metadata: Metadata = {
-  title: "ملفي الشخصي — فضاء الموظف — UNI-PAY",
+  title: "ملفي الشخصي — فضاء الموظف — أكاديميا شفاف",
   description: "البيانات الإدارية والمهنية المعتمدة للموظف",
 };
 

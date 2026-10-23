@@ -15,7 +15,7 @@ import {
 } from "@/lib/employe/employe-service";
 
 export const metadata: Metadata = {
-  title: "كشوف الراتب — فضاء الموظف — UNI-PAY",
+  title: "كشوف الراتب — فضاء الموظف — أكاديميا شفاف",
   description: "سجل كشوف الراتب الشهرية المعتمدة والمتاحة للتحميل والطباعة",
 };
 

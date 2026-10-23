@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "الصفحة غير موجودة — UNI-PAY",
+  title: "الصفحة غير موجودة — أكاديميا شفاف",
   description: "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
 };
 
@@ -20,12 +21,18 @@ export default function NotFound() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 mb-10 focus-ring rounded-md"
-          aria-label="UNI-PAY — الصفحة الرئيسية"
+          aria-label="أكاديميا شفاف — الصفحة الرئيسية"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-uni-navy text-white font-bold text-sm">
-            U
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white p-1 shadow-sm border border-slate-200 shrink-0">
+            <Image
+              src="/images/logo.png"
+              alt="شعار أكاديميا شفاف"
+              width={36}
+              height={36}
+              className="h-full w-full object-contain"
+            />
           </div>
-          <span className="text-lg font-bold text-uni-navy">UNI-PAY</span>
+          <span className="text-lg font-bold text-uni-navy">أكاديميا شفاف</span>
         </Link>
 
         {/* 404 visual */}

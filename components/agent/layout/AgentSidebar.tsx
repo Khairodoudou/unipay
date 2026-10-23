@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -80,12 +81,18 @@ export function AgentSidebar({ user }: AgentSidebarProps) {
           className="flex items-center gap-3 focus-visible:ring-2 focus-visible:ring-teal-500 rounded-xl group"
           onClick={() => setMobileOpen(false)}
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 via-blue-600 to-slate-800 flex items-center justify-center text-white font-black text-lg shadow-md group-hover:scale-105 transition-transform">
-            U
+          <div className="w-10 h-10 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform shrink-0 border border-white/10">
+            <Image
+              src="/images/logo.png"
+              alt="أكاديميا شفاف"
+              width={40}
+              height={40}
+              className="h-full w-full object-contain"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-black tracking-tight text-white">UNI-PAY</span>
+              <span className="text-base font-black tracking-tight text-white">أكاديميا شفاف</span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">
                 أجور
               </span>
@@ -181,7 +188,7 @@ export function AgentSidebar({ user }: AgentSidebarProps) {
             <Menu className="w-5 h-5" />
           </button>
           <span className="font-extrabold text-sm tracking-tight text-white">
-            UNI-PAY — الأجور
+            أكاديميا شفاف — الأجور
           </span>
         </div>
         <span className="text-xs font-semibold px-2 py-0.5 rounded bg-teal-900/70 text-teal-300 border border-teal-700/50">

@@ -13,8 +13,8 @@ import {
 import { StatusBadge } from "@/components/workflow/StatusBadge";
 
 export const metadata: Metadata = {
-  title: "لوحة القيادة — رئيس المصلحة — UNI-PAY",
-  description: "متابعة وتدقيق جداول الرواتب لمنصة UNI-PAY",
+  title: "لوحة القيادة — رئيس المصلحة — أكاديميا شفاف",
+  description: "متابعة وتدقيق جداول الرواتب لمنصة أكاديميا شفاف",
 };
 
 export default async function ChefDashboardPage() {

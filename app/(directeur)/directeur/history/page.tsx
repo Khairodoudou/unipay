@@ -8,7 +8,7 @@ import {
 import { History } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "سجل القرارات — مدير المؤسسة — UNI-PAY",
+  title: "سجل القرارات — مدير المؤسسة — أكاديميا شفاف",
   description: "سجل القرارات والإجراءات المتخذة في مسار المصادقة مع أدوات التصفية والبحث المتقدم",
 };
 

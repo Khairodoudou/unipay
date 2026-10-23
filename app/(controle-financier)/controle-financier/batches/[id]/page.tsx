@@ -17,7 +17,7 @@ interface ControleurBatchDetailPageProps {
 }
 
 export const metadata: Metadata = {
-  title: "منح التأشيرة المالية — المراقب المالي — UNI-PAY",
+  title: "منح التأشيرة المالية — المراقب المالي — أكاديميا شفاف",
 };
 
 export default async function ControleurBatchDetailPage({

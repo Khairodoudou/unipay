@@ -6,7 +6,7 @@ import { OrganizationUnitsList } from "@/components/admin/organization/Organizat
 import { Building2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "الهيكل التنظيمي والمؤسسة — UNI-PAY",
+  title: "الهيكل التنظيمي والمؤسسة — أكاديميا شفاف",
   description: "بيانات المؤسسة الجامعية المركزية والوحدات الإدارية التابعة لها",
 };
 

@@ -9,8 +9,8 @@ import { UserPlus, Users as UsersIcon } from "lucide-react";
 import { Prisma } from "@prisma/client";
 
 export const metadata: Metadata = {
-  title: "إدارة المستخدمين — UNI-PAY",
-  description: "قائمة مستخدمي منصة UNI-PAY، التحكم في الحسابات وتخصيص الأدوار",
+  title: "إدارة المستخدمين — أكاديميا شفاف",
+  description: "قائمة مستخدمي منصة أكاديميا شفاف، التحكم في الحسابات وتخصيص الأدوار",
 };
 
 interface UsersPageProps {

@@ -1,6 +1,6 @@
 /**
  * scripts/seed_super_admin.ts
- * Crée ou recrée le compte central SUPER_ADMIN de la plateforme UNI-PAY
+ * Crée ou recrée le compte central SUPER_ADMIN de la plateforme أكاديميا شفاف
  * ⚠️ Ne doit être exécuté qu'une seule fois sur un environnement vierge ou de test
  */
 
@@ -30,7 +30,7 @@ async function main() {
 
   // Create or update the SUPER_ADMIN user
   const email = "superadmin@unipay.dz";
-  const password = "Admin@UNI-PAY-2026!";
+  const password = "Admin@أكاديميا شفاف-2026!";
   const passwordHash = await bcrypt.hash(password, 12);
 
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -67,7 +67,7 @@ async function main() {
 ╔══════════════════════════════════════════════╗
 ║  IDENTIFIANTS DE L'ADMINISTRATEUR NATIONAL   ║
 ║  Email    : superadmin@unipay.dz             ║
-║  Password : Admin@UNI-PAY-2026!              ║
+║  Password : Admin@أكاديميا شفاف-2026!              ║
 ║  ⚠️ Changez ce mot de passe en production !  ║
 ╚══════════════════════════════════════════════╝
   `);

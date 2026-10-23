@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, X, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,17 +59,24 @@ export default function Navbar() {
           <Link
             href="/"
             className="flex items-center gap-3 focus-ring rounded-lg group"
-            aria-label="UNI-PAY — الصفحة الرئيسية"
+            aria-label="أكاديميا شفاف — الصفحة الرئيسية"
           >
             <div
               className={cn(
-                "flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl font-bold text-base sm:text-lg transition-transform group-hover:scale-105 shadow-md",
+                "relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-white p-1.5 transition-all group-hover:scale-105 shrink-0 shadow-sm",
                 scrolled
-                  ? "bg-gradient-to-br from-uni-navy to-blue-700 text-white shadow-blue-900/10"
-                  : "bg-gradient-to-br from-teal-400 to-blue-600 text-white shadow-teal-500/20"
+                  ? "border border-slate-200/90 shadow-slate-200/50"
+                  : "border border-white/20 shadow-blue-950/30"
               )}
             >
-              U
+              <Image
+                src="/images/logo.png"
+                alt="شعار أكاديميا شفاف"
+                width={44}
+                height={44}
+                className="h-full w-full object-contain"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span
@@ -77,7 +85,7 @@ export default function Navbar() {
                   scrolled ? "text-uni-navy" : "text-white"
                 )}
               >
-                UNI-PAY
+                أكاديميا شفاف
               </span>
               <span
                 className={cn(

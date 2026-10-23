@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "الاحتساب والتحقق — مساحة الموارد البشرية — UNI-PAY",
-  description: "مركز معالجة واحتساب مسيرات الرواتب لمنصة UNI-PAY",
+  title: "الاحتساب والتحقق — مساحة الموارد البشرية — أكاديميا شفاف",
+  description: "مركز معالجة واحتساب مسيرات الرواتب لمنصة أكاديميا شفاف",
 };
 
 export default async function GlobalCalculatePage() {

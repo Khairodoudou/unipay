@@ -119,7 +119,7 @@ export default async function SuperAdminSettingsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div className="p-3 bg-slate-50 rounded-xl">
             <span className="text-[10px] text-slate-400 block font-bold">الإصدار المعماري</span>
-            <span className="font-mono font-bold text-slate-800">UNI-PAY v2.0-MT</span>
+            <span className="font-mono font-bold text-slate-800">أكاديميا شفاف v2.0-MT</span>
           </div>
           <div className="p-3 bg-slate-50 rounded-xl">
             <span className="text-[10px] text-slate-400 block font-bold">نمط الإطار البرمجي</span>

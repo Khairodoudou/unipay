@@ -4,7 +4,7 @@
  * Service de génération du fichier technique générique d'export de paiement.
  *
  * AVERTISSEMENT LÉGAL OBLIGATOIRE :
- * "Export technique générique UNI-PAY — non présenté comme format bancaire officiel."
+ * "Export technique générique أكاديميا شفاف — non présenté comme format bancaire officiel."
  *
  * Ce fichier est un export CSV structuré de type GENERIC_BANK_TRANSFER.
  * Il n'implémente PAS :
@@ -83,7 +83,7 @@ export async function generateBankFile(
 
   const period = order.batch.period;
   const periodLabel = period?.label ?? `${period?.year ?? ""}/${period?.month ?? ""}`;
-  const orgName = org?.name ?? "UNI-PAY";
+  const orgName = org?.name ?? "أكاديميا شفاف";
   const orgCode = org?.code ?? "ORG";
 
   const orderDateStr = (order.processingStartedAt ?? order.createdAt).toISOString();
@@ -92,7 +92,7 @@ export async function generateBankFile(
   // 2. En-tête du fichier avec avertissement légal
   const disclaimer = [
     "# ============================================================",
-    "# EXPORT TECHNIQUE GÉNÉRIQUE UNI-PAY",
+    "# EXPORT TECHNIQUE GÉNÉRIQUE أكاديميا شفاف",
     "# NON PRÉSENTÉ COMME FORMAT BANCAIRE OFFICIEL",
     "# Format: GENERIC_BANK_TRANSFER / CSV",
     `# Organisation: ${orgName} (${orgCode})`,
@@ -104,7 +104,7 @@ export async function generateBankFile(
     "# ============================================================",
     "# AVERTISSEMENT: Ce fichier est confidentiel.",
     "# Il doit être traité par un processus bancaire autorisé.",
-    "# UNI-PAY ne prétend effectuer aucun virement bancaire réel.",
+    "# أكاديميا شفاف ne prétend effectuer aucun virement bancaire réel.",
     "# ============================================================",
   ].join("\n");
 

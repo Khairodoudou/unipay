@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -67,12 +68,23 @@ export function DirecteurSidebar({ user }: DirecteurSidebarProps) {
       {/* Brand Header */}
       <div className="p-5 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-md">
-            <Crown className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-md shrink-0 border border-white/10">
+            <Image
+              src="/images/logo.png"
+              alt="أكاديميا شفاف"
+              width={40}
+              height={40}
+              className="h-full w-full object-contain"
+            />
           </div>
           <div>
-            <h1 className="text-base font-bold text-white tracking-wide">UNI-PAY</h1>
-            <p className="text-[11px] text-purple-300 font-medium">إدارة المؤسسة الجامعية</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base font-bold text-white tracking-wide">أكاديميا شفاف</h1>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                مدير المؤسسة
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-medium">إدارة المؤسسة الجامعية</p>
           </div>
         </div>
 
@@ -144,7 +156,7 @@ export function DirecteurSidebar({ user }: DirecteurSidebarProps) {
       <div className="lg:hidden bg-slate-900 text-white p-4 flex items-center justify-between border-b border-slate-800">
         <div className="flex items-center gap-2">
           <Crown className="w-5 h-5 text-purple-400" />
-          <span className="font-bold text-sm">UNI-PAY — مدير المؤسسة</span>
+          <span className="font-bold text-sm">أكاديميا شفاف — مدير المؤسسة</span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}

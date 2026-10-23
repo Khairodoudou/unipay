@@ -8,8 +8,8 @@ import {
 import { Scale, Info } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "قواعد الأجور — UNI-PAY",
-  description: "بنية قواعد الأجور القابلة للتهيئة والإصدار لمنصة UNI-PAY",
+  title: "قواعد الأجور — أكاديميا شفاف",
+  description: "بنية قواعد الأجور القابلة للتهيئة والإصدار لمنصة أكاديميا شفاف",
 };
 
 export default async function AdminPayrollRulesPage() {

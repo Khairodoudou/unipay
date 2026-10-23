@@ -82,7 +82,7 @@ export default function WorkflowSection() {
     <section
       id="workflow"
       className="bg-white py-20 lg:py-28 relative overflow-hidden"
-      aria-label="كيف تعمل UNI-PAY"
+      aria-label="كيف تعمل أكاديميا شفاف"
     >
       <div className="container-uni px-4 sm:px-6 lg:px-8">
         {/* Header */}

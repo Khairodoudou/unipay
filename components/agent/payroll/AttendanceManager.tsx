@@ -396,7 +396,7 @@ export function AttendanceManager({
         <table>
           <tr>
             <td colspan="9" class="header-title">
-              سجل الحضور والغيابات — مساحة الموارد البشرية UNI-PAY — تاريخ التصدير: ${exportDate} (العدد: ${dataToExport.length} موظف)
+              سجل الحضور والغيابات — مساحة الموارد البشرية أكاديميا شفاف — تاريخ التصدير: ${exportDate} (العدد: ${dataToExport.length} موظف)
             </td>
           </tr>
           <thead>

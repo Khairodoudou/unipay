@@ -1,118 +1,101 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/rbac/guards";
 import prisma from "@/lib/db/prisma";
-import { PaymentOrderDetailClient } from "@/components/comptable/payment/PaymentOrderDetailClient";
-
-interface PaymentDetailPageProps {
-  params: Promise<{ id: string }>;
-}
+import {
+  ComptableHistoryFilterView,
+  SerializedComptableAction,
+} from "@/components/comptable/history/ComptableHistoryFilterView";
+import { History } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "تفاصيل أمر الدفع — المحاسب المالي — UNI-PAY",
-  description: "عرض حركات الدفع والملف التقني والتسوية المحاسبية",
+  title: "سجل العمليات المحاسبية — المحاسب المالي — أكاديميا شفاف",
+  description: "تتبع زمني لكافة التأشيرات والقرارات المحاسبية مع أدوات التصفية والبحث",
 };
 
-export default async function PaymentOrderDetailPage({
-  params,
-}: PaymentDetailPageProps) {
-  const { id } = await params;
+export default async function ComptableHistoryPage() {
   const user = await requireRole(["COMPTABLE", "ADMIN"]);
 
-  const order = await prisma.paymentOrder.findUnique({
-    where: { id },
-    include: {
+  const actions = await prisma.workflowAction.findMany({
+    where: {
       batch: {
-        include: {
-          period: { select: { label: true, year: true, month: true } },
-        },
-      },
-      createdBy: { select: { firstName: true, lastName: true } },
-      confirmedBy: { select: { firstName: true, lastName: true } },
-      transactions: {
-        include: {
-          employee: {
-            select: {
-              id: true,
-              matricule: true,
-              firstName: true,
-              lastName: true,
-              bankName: true,
-            },
-          },
-        },
-        orderBy: { reference: "asc" },
+        organizationId: user.organizationId,
+        period: { year: { gte: 2024, lte: 2035 } },
       },
     },
+    include: {
+      actor: {
+        select: {
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: { select: { code: true, nameAr: true } },
+        },
+      },
+      batch: {
+        select: {
+          id: true,
+          label: true,
+          period: { select: { month: true, year: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 150,
   });
 
-  if (!order) {
-    notFound();
-  }
+  // Unique valid years
+  const yearSet = new Set<number>();
+  actions.forEach((act) => { if (act.batch?.period?.year) yearSet.add(act.batch.period.year); });
+  if (yearSet.size === 0) [2025, 2026, 2027, 2028, 2029].forEach((y) => yearSet.add(y));
+  const availableYears = Array.from(yearSet).sort((a, b) => b - a);
 
-  // Multi-tenancy check
-  if (
-    order.batch.organizationId &&
-    order.batch.organizationId !== user.organizationId &&
-    user.roleCode !== "ADMIN"
-  ) {
-    notFound();
-  }
-
-  const periodLabel = order.batch.period?.label ?? `${order.batch.period?.year ?? ""}/${order.batch.period?.month ?? ""}`;
+  // Serialize
+  const serializedActions: SerializedComptableAction[] = actions.map((act) => ({
+    id: act.id,
+    action: act.action,
+    fromStatus: act.fromStatus,
+    toStatus: act.toStatus,
+    reason: act.reason ?? null,
+    createdAt: act.createdAt.toISOString(),
+    actor: {
+      name: act.actor.firstName && act.actor.lastName
+        ? `${act.actor.firstName} ${act.actor.lastName}`
+        : act.actor.firstName || act.actor.email,
+      email: act.actor.email,
+      roleCode: act.actor.role?.code ?? "USER",
+      roleNameAr: act.actor.role?.nameAr ?? act.actor.role?.code ?? "مستخدم",
+    },
+    batch: {
+      id: act.batch.id,
+      label: act.batch.label ?? null,
+      periodMonth: act.batch.period?.month ?? null,
+      periodYear: act.batch.period?.year ?? null,
+    },
+  }));
 
   return (
-    <PaymentOrderDetailClient
-      order={{
-        id: order.id,
-        reference: order.reference,
-        status: order.status,
-        totalAmount: Number(order.totalAmount),
-        employeeCount: order.employeeCount,
-        currency: order.currency,
-        bankFormat: order.bankFormat,
-        fileName: order.fileName,
-        fileHash: order.fileHash,
-        fileSize: order.fileSize,
-        confirmationMethod: order.confirmationMethod,
-        confirmationRef: order.confirmationRef,
-        reconciliationNotes: order.reconciliationNotes,
-        processingStartedAt: order.processingStartedAt?.toISOString() ?? null,
-        paidAt: order.paidAt?.toISOString() ?? null,
-        closedAt: order.closedAt?.toISOString() ?? null,
-        createdAt: order.createdAt.toISOString(),
-        batchId: order.batch.id,
-        batchLabel: order.batch.label ?? order.batch.period?.label ?? order.batchId,
-        batchStatus: order.batch.status,
-        periodLabel,
-        createdByName: order.createdBy
-          ? `${order.createdBy.firstName} ${order.createdBy.lastName}`
-          : null,
-        confirmedByName: order.confirmedBy
-          ? `${order.confirmedBy.firstName} ${order.confirmedBy.lastName}`
-          : null,
-      }}
-      transactions={order.transactions.map((tx) => ({
-        id: tx.id,
-        reference: tx.reference,
-        amount: Number(tx.amount),
-        ribMasked: tx.ribMasked,
-        status: tx.status,
-        failureReason: tx.failureReason,
-        confirmedAt: tx.confirmedAt?.toISOString() ?? null,
-        employee: {
-          id: tx.employee.id,
-          matricule: tx.employee.matricule,
-          firstName: tx.employee.firstName,
-          lastName: tx.employee.lastName,
-          bankName: tx.employee.bankName,
-        },
-      }))}
-      user={{
-        id: user.id,
-        roleCode: user.roleCode,
-        permissions: user.permissions,
-      }}
-    />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <History className="w-5 h-5 text-emerald-600" />
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              سجل التأشيرات والقرارات المحاسبية
+            </h1>
+          </div>
+          <p className="text-sm text-slate-500">
+            تتبع زمني وفحص دقيق لكافة عمليات التحقق والتأشير المحاسبي وإعادات التصحيح
+          </p>
+        </div>
+        <div className="text-xs font-semibold text-slate-600 bg-slate-100 px-3.5 py-2 rounded-xl self-start md:self-auto">
+          إجمالي الإجراءات: <strong className="font-mono text-slate-900">{actions.length}</strong>
+        </div>
+      </div>
+
+      {/* Interactive Filter View */}
+      <ComptableHistoryFilterView actions={serializedActions} availableYears={availableYears} />
+    </div>
   );
 }
+

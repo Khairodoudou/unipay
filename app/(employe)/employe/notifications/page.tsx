@@ -5,8 +5,8 @@ import { requireRole } from "@/lib/rbac/guards";
 import { NotificationsList } from "@/components/employe/notifications/NotificationsList";
 
 export const metadata: Metadata = {
-  title: "الإشعارات والتنبيهات — فضاء الموظف — UNI-PAY",
-  description: "سجل الإشعارات والتنبيهات الخاصة بالموظف لمنصة UNI-PAY",
+  title: "الإشعارات والتنبيهات — فضاء الموظف — أكاديميا شفاف",
+  description: "سجل الإشعارات والتنبيهات الخاصة بالموظف لمنصة أكاديميا شفاف",
 };
 
 export default async function EmployeNotificationsPage() {

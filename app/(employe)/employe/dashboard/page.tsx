@@ -16,8 +16,8 @@ import {
 import { getEmployeeDashboardStats } from "@/lib/employe/employe-service";
 
 export const metadata: Metadata = {
-  title: "لوحة التحكم — فضاء الموظف — UNI-PAY",
-  description: "الاطلاع على كشوف الراتب والملف الإداري الشخصي لمنصة UNI-PAY",
+  title: "لوحة التحكم — فضاء الموظف — أكاديميا شفاف",
+  description: "الاطلاع على كشوف الراتب والملف الإداري الشخصي لمنصة أكاديميا شفاف",
 };
 
 export default async function EmployeDashboardPage() {

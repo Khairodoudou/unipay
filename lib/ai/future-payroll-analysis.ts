@@ -48,7 +48,7 @@ export interface AIRecommendationItem {
 
 /**
  * Interface d'abstraction du fournisseur d'IA
- * Permet de remplacer ou d'étendre Gemini sans casser l'architecture UNI-PAY.
+ * Permet de remplacer ou d'étendre Gemini sans casser l'architecture أكاديميا شفاف.
  */
 export interface AIProviderService {
   name: string;
@@ -62,7 +62,7 @@ export interface AIProviderService {
  * Implémentation modulaire prête pour les phases ultérieures
  */
 export class UniversityPayrollAIService implements AIProviderService {
-  name = "UNI-PAY Intelligent Payroll Core";
+  name = "أكاديميا شفاف Intelligent Payroll Core";
   version = "1.0.0-future-ready";
 
   async analyzePayrollTrends(trends: PeriodPayrollTrend[]): Promise<PayrollAnalysisResult> {

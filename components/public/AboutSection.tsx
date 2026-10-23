@@ -50,7 +50,7 @@ export default function AboutSection() {
     <section
       id="about"
       className="bg-white py-20 lg:py-28 relative overflow-hidden"
-      aria-label="ما هي UNI-PAY"
+      aria-label="ما هي أكاديميا شفاف"
     >
       <div className="container-uni px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
@@ -60,7 +60,7 @@ export default function AboutSection() {
             نبذة عن المنصة
           </span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight">
-            ما هي منصة <span className="text-uni-navy">UNI-PAY</span>؟
+            ما هي منصة <span className="text-uni-navy">أكاديميا شفاف</span>؟
           </h2>
           <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
             نظام معلوماتي مؤسسي متطور، صُمم خصيصاً لتنظيم ورقمنة دورة معالجة أجور موظفي المؤسسات الجامعية
@@ -77,7 +77,7 @@ export default function AboutSection() {
             </h3>
             
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-              تعمل <strong className="text-uni-navy font-semibold">UNI-PAY</strong> على القضاء التام على الملفات المشتتة والأخطاء البشرية الحسابية عبر مسار عمل رقمي موحد، يربط مصالح الموارد البشرية، الأمانة العامة، عمادة الكليات، إدارة المالية والرقابة المالية في منصة مركزية واحدة.
+              تعمل <strong className="text-uni-navy font-semibold">أكاديميا شفاف</strong> على القضاء التام على الملفات المشتتة والأخطاء البشرية الحسابية عبر مسار عمل رقمي موحد، يربط مصالح الموارد البشرية، الأمانة العامة، عمادة الكليات، إدارة المالية والرقابة المالية في منصة مركزية واحدة.
             </p>
 
             <div className="flex flex-col gap-4 pt-2">

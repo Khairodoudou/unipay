@@ -5,7 +5,7 @@
  * Interface de gestion du module de paiement Phase 8 avec filtrage professionnel complet.
  *
  * AVERTISSEMENT OBLIGATOIRE affiché dans l'UI :
- * "Export technique générique UNI-PAY — non présenté comme format bancaire officiel."
+ * "Export technique générique أكاديميا شفاف — non présenté comme format bancaire officiel."
  */
 
 import { useState, useTransition, useMemo, useRef } from "react";
@@ -1159,7 +1159,7 @@ export function PaymentDashboardClient({
                           <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-600" />
                           <span>
                             هذا الملف <strong>تصدير تقني عام (GENERIC_BANK_TRANSFER)</strong> — غير مُقدَّم كصيغة بنكية رسمية ملزمة.
-                            UNI-PAY لا يُنفّذ أي تحويل بنكي حقيقي تلقائي.
+                            أكاديميا شفاف لا يُنفّذ أي تحويل بنكي حقيقي تلقائي.
                           </span>
                         </div>
 

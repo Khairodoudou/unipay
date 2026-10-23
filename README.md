@@ -1,7 +1,7 @@
-# UNI-PAY (نظام إدارة الرواتب الجامعية)
+# أكاديميا شفاف (نظام إدارة الرواتب الجامعية)
 ## Plateforme Universitaire de Gestion du Cycle de Paie — MVP
 
-UNI-PAY est une application web intégrée conçue pour moderniser, fiabiliser et tracer l'intégralité du cycle de paie des universités et établissements d'enseignement supérieur algériens.
+أكاديميا شفاف est une application web intégrée conçue pour moderniser, fiabiliser et tracer l'intégralité du cycle de paie des universités et établissements d'enseignement supérieur algériens.
 
 Le système prend en charge la gestion du personnel, le calcul réglementaire de la paie, l'audit algorithmique intelligent, le workflow d'approbation multi-niveaux à visa obligatoire, l'espace en libre-service pour les employés et le cycle technique de paiement et de clôture financière.
 
@@ -136,4 +136,4 @@ npm run build                   # Compilation Next.js Turbopack
 
 ## 📌 Périmètre et Statut du MVP
 
-> **Note importante** : UNI-PAY MVP est une plateforme fonctionnelle, stabilisée, auditée et prête pour démonstration institutionnelle. Elle opère en environnement local/démonstration (base SQLite, simulation bancaire contrôlée conforme aux formats techniques). Les raccordements aux passerelles de paiement en temps réel (SATIM/CIB/Edahabia) et aux systèmes fiscaux gouvernementaux (Jibayatic/DGI) constituent des développements ultérieurs hors périmètre du MVP.
+> **Note importante** : أكاديميا شفاف MVP est une plateforme fonctionnelle, stabilisée, auditée et prête pour démonstration institutionnelle. Elle opère en environnement local/démonstration (base SQLite, simulation bancaire contrôlée conforme aux formats techniques). Les raccordements aux passerelles de paiement en temps réel (SATIM/CIB/Edahabia) et aux systèmes fiscaux gouvernementaux (Jibayatic/DGI) constituent des développements ultérieurs hors périmètre du MVP.

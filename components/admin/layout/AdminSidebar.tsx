@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -88,13 +89,19 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
           className="flex items-center gap-3 focus-ring rounded-xl group"
           onClick={() => setMobileOpen(false)}
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 via-blue-600 to-uni-navy flex items-center justify-center text-white font-black text-lg shadow-md group-hover:scale-105 transition-transform">
-            U
+          <div className="w-10 h-10 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform shrink-0 border border-white/10">
+            <Image
+              src="/images/logo.png"
+              alt="أكاديميا شفاف"
+              width={40}
+              height={40}
+              className="h-full w-full object-contain"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-black tracking-tight text-white">
-                UNI-PAY
+                أكاديميا شفاف
               </span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">
                 إدارة
@@ -208,7 +215,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
             <Menu className="w-5 h-5" />
           </button>
           <span className="font-extrabold text-sm tracking-tight text-white">
-            UNI-PAY — فضاء الإدارة
+            أكاديميا شفاف — فضاء الإدارة
           </span>
         </div>
 

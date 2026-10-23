@@ -7,7 +7,7 @@ import {
 } from "@/components/directeur/batches/DirecteurBatchesTable";
 
 export const metadata: Metadata = {
-  title: "جداول الرواتب — مدير المؤسسة — UNI-PAY",
+  title: "جداول الرواتب — مدير المؤسسة — أكاديميا شفاف",
   description: "متابعة وتصفية كافة دفعات الأجور ومسارات المصادقة الإدارية والتنفيذية",
 };
 

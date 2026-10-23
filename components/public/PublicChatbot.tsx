@@ -28,7 +28,7 @@ interface ChatMessage {
 
 const QUICK_PROMPTS = [
   { label: "📄 كيف أستخرج كشف الراتب؟", query: "كيف يمكنني الاطلاع على كشف الراتب وتحميله بصيغة PDF؟" },
-  { label: "👥 ما هي الأدوار في المنصة؟", query: "ما هي الأدوار والصلاحيات المختلفة في منصة UNI-PAY؟" },
+  { label: "👥 ما هي الأدوار في المنصة؟", query: "ما هي الأدوار والصلاحيات المختلفة في منصة أكاديميا شفاف؟" },
   { label: "🔑 نسيت بيانات الدخول", query: "كيف يمكنني استرجاع كلمة المرور أو الدخول إلى حسابي؟" },
   { label: "🧮 كيف يُحسب الضمان الاجتماعي و IRG؟", query: "كيف يتم حساب اقتطاع الضمان الاجتماعي CNAS وضريبة الدخل IRG في المنصة؟" },
 ];
@@ -78,7 +78,7 @@ export default function PublicChatbot() {
         {
           id: "welcome-msg",
           role: "assistant",
-          content: `مرحباً بك في **منصة UNI-PAY**! 🎓
+          content: `مرحباً بك في **منصة أكاديميا شفاف**! 🎓
 
 أنا **المساعد الذكي الرسمي** للمنصة الوطنية لتسيير رواتب قطاع التعليم العالي والبحث العلمي بالجزائر.
 
@@ -158,7 +158,7 @@ export default function PublicChatbot() {
       {
         id: "welcome-reset",
         role: "assistant",
-        content: `تم بدء محادثة جديدة. مرحباً بك! كيف يمكنني مساعدتك في كل ما يتعلق بمنصة UNI-PAY؟`,
+        content: `تم بدء محادثة جديدة. مرحباً بك! كيف يمكنني مساعدتك في كل ما يتعلق بمنصة أكاديميا شفاف؟`,
         timestamp: new Date().toLocaleTimeString("ar-DZ", { hour: "2-digit", minute: "2-digit" }),
       },
     ]);
@@ -215,7 +215,7 @@ export default function PublicChatbot() {
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            aria-label="فتح المساعد الذكي UNI-PAY"
+            aria-label="فتح المساعد الذكي أكاديميا شفاف"
             className={cn(
               "flex items-center gap-3 px-4 py-3 rounded-full text-white shadow-2xl transition-all duration-300",
               "bg-gradient-to-l from-slate-950 via-[#0b1528] to-blue-950 hover:to-blue-900 border border-blue-400/30 hover:border-blue-400/60",
@@ -231,7 +231,7 @@ export default function PublicChatbot() {
             <div className="text-right hidden sm:block">
               <p className="text-xs font-bold leading-tight flex items-center gap-1.5">
                 <span>المساعد الذكي</span>
-                <span className="text-[10px] text-teal-300 font-mono">UNI-PAY</span>
+                <span className="text-[10px] text-teal-300 font-mono">أكاديميا شفاف</span>
               </p>
               <p className="text-[10px] text-slate-300 leading-tight">استفسارات الرواتب والمنصة</p>
             </div>
@@ -265,7 +265,7 @@ export default function PublicChatbot() {
 
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-sm font-bold tracking-tight text-white">المساعد الذكي UNI-PAY</h3>
+                  <h3 className="text-sm font-bold tracking-tight text-white">المساعد الذكي أكاديميا شفاف</h3>
                   <span className="px-1.5 py-0.2 rounded-md bg-teal-400/20 text-teal-300 text-[9px] font-mono font-bold border border-teal-400/30">
                     AI DZ
                   </span>
