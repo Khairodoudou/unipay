@@ -30,7 +30,7 @@ async function main() {
 
   // Create or update the SUPER_ADMIN user
   const email = "superadmin@unipay.dz";
-  const password = "Admin@أكاديميا شفاف-2026!";
+  const password = "superadmin1235";
   const passwordHash = await bcrypt.hash(password, 12);
 
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -67,8 +67,7 @@ async function main() {
 ╔══════════════════════════════════════════════╗
 ║  IDENTIFIANTS DE L'ADMINISTRATEUR NATIONAL   ║
 ║  Email    : superadmin@unipay.dz             ║
-║  Password : Admin@أكاديميا شفاف-2026!              ║
-║  ⚠️ Changez ce mot de passe en production !  ║
+║  Password : superadmin1235                   ║
 ╚══════════════════════════════════════════════╝
   `);
 }
