@@ -8,14 +8,13 @@
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
-    "lint": "eslint",
-    "test:phase8": "tsx scripts/test_phase8.ts",
-    "test:multitenant": "tsx scripts/test_multitenant_isolation.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
     "prisma:studio": "prisma studio",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "db:push:turso": "tsx scripts/push-to-turso.ts",
+    "seed:super-admin": "tsx scripts/seed_super_admin.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
