@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../lib/db/prisma";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
 
 const BCRYPT_ROUNDS = 12;
 

@@ -1,5 +1,5 @@
 // UNI-PAY Prisma Schema — Phase 4 + Phase 6 + Phase 8
-// Conçu pour SQLite en local/MVP, 100% portable vers PostgreSQL pour la production
+// Architecture Dual-Mode : SQLite local (dev) ↔ Turso Cloud (production)
 
 generator client {
   provider = "prisma-client-js"
@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 // ── Phase 4 : Employee Management ──────────────────────────────────────────────

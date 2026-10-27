@@ -8,7 +8,9 @@
  * 3. Matricule + montant (jamais le nom seul)
  */
 
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
+type Decimal = Prisma.Decimal;
+const Decimal = Prisma.Decimal;
 import prisma from "@/lib/db/prisma";
 import { recordAuditLog } from "@/lib/audit/logger";
 

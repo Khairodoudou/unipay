@@ -11,7 +11,9 @@
  * 6. أكاديميا شفاف ne prétend effectuer aucun virement bancaire réel.
  */
 
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
+type Decimal = Prisma.Decimal;
+const Decimal = Prisma.Decimal;
 import { randomBytes } from "crypto";
 import prisma from "@/lib/db/prisma";
 import { getCurrentUser } from "@/lib/rbac/guards";

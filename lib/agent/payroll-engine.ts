@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/db/prisma";
 import { getCurrentUser } from "@/lib/rbac/guards";
 import { recordAuditLog } from "@/lib/audit/logger";
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
+type Decimal = Prisma.Decimal;
+const Decimal = Prisma.Decimal;
 
 export interface ActionResult<T = unknown> {
   success: boolean;
