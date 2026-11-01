@@ -7,6 +7,17 @@ export interface PermissionDefinition {
 }
 
 export const INITIAL_PERMISSIONS: PermissionDefinition[] = [
+  // Super Admin — Gouvernance nationale
+  { code: "superadmin.access",          nameAr: "الوصول إلى لوحة الإدارة المركزية الوطنية", category: "SYSTEM" },
+  { code: "universities.read",          nameAr: "عرض قائمة الجامعات المسجلة",               category: "SYSTEM" },
+  { code: "universities.create",        nameAr: "تسجيل جامعة جديدة في المنصة الوطنية",     category: "SYSTEM" },
+  { code: "universities.update",        nameAr: "تعديل بيانات جامعة مسجلة",                 category: "SYSTEM" },
+  { code: "universities.suspend",       nameAr: "تجميد أو إعادة تنشيط جامعة",              category: "SYSTEM" },
+  { code: "universities.archive",       nameAr: "أرشفة أو حذف جامعة نهائياً",              category: "SYSTEM" },
+  { code: "superadmin.audit.read",      nameAr: "الاطلاع على سجل التدقيق المركزي الوطني", category: "AUDIT"  },
+  { code: "superadmin.settings.update", nameAr: "تعديل إعدادات المنصة الوطنية",            category: "SYSTEM" },
+  { code: "superadmin.rules.manage",    nameAr: "إدارة قواعد الأجور على المستوى الوطني",  category: "SYSTEM" },
+
   // Administration & Système
   { code: "admin.access", nameAr: "الوصول إلى لوحة الإدارة", category: "SYSTEM" },
   { code: "system.settings", nameAr: "تعديل إعدادات المنصة", category: "SYSTEM" },
