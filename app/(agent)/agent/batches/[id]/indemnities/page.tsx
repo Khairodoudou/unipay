@@ -22,7 +22,7 @@ interface IndemnitiesPageProps {
 }
 
 export default async function IndemnitiesPage({ params }: IndemnitiesPageProps) {
-  await requireRole(["AGENT_RH", "ADMIN"]);
+  await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
   const { id } = await params;
 
   const batch = await prisma.payrollBatch.findUnique({

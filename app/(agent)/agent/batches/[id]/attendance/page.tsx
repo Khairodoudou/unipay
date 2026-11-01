@@ -22,7 +22,7 @@ interface AttendancePageProps {
 }
 
 export default async function AttendancePage({ params }: AttendancePageProps) {
-  await requireRole(["AGENT_RH", "ADMIN"]);
+  await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
   const { id } = await params;
 
   const batch = await prisma.payrollBatch.findUnique({

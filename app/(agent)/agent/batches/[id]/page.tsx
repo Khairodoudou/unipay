@@ -33,7 +33,7 @@ interface BatchDetailPageProps {
 }
 
 export default async function BatchDetailPage({ params }: BatchDetailPageProps) {
-  const user = await requireRole(["AGENT_RH", "ADMIN"]);
+  const user = await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
   const { id } = await params;
 
   const batch = await prisma.payrollBatch.findUnique({
@@ -68,16 +68,19 @@ export default async function BatchDetailPage({ params }: BatchDetailPageProps) 
     },
   });
 
-  if (!batch || (batch.organizationId && batch.organizationId !== user.organizationId)) {
+  const isSuperAdmin = user.roleCode === "SUPER_ADMIN";
+  if (!batch || (!isSuperAdmin && batch.organizationId && user.organizationId && batch.organizationId !== user.organizationId)) {
     notFound();
   }
 
   // Find all active employees not in this batch
   const existingEmployeeIds = batch.employees.map((e) => e.employeeId);
+  const targetOrgId = batch.organizationId || user.organizationId;
   const availableEmployees = await prisma.employee.findMany({
     where: {
       status: "ACTIVE",
       id: { notIn: existingEmployeeIds },
+      ...(targetOrgId ? { organizationId: targetOrgId } : {}),
     },
     select: {
       id: true,

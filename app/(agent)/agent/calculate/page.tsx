@@ -14,9 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default async function GlobalCalculatePage() {
-  await requireRole(["AGENT_RH", "ADMIN"]);
+  const user = await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
+
+  const where = user.roleCode === "SUPER_ADMIN" && !user.organizationId
+    ? {}
+    : { organizationId: user.organizationId };
 
   const batches = await prisma.payrollBatch.findMany({
+    where,
     orderBy: { createdAt: "desc" },
     include: {
       period: true,

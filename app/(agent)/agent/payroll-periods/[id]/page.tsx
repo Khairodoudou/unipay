@@ -1,321 +1,207 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/db/prisma";
-import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/rbac/guards";
+import { PeriodDetailClient } from "@/components/agent/payroll/PeriodDetailClient";
 import {
-  Users,
-  UserPlus,
-  Upload,
-  Search,
-  Filter,
-  Eye,
+  Calendar,
+  FileSpreadsheet,
+  ArrowRight,
+  ArrowUpRight,
+  Clock,
   CheckCircle2,
-  XCircle,
-  AlertCircle,
-  Building2,
-  ChevronRight,
-  ChevronLeft,
+  RotateCw,
+  Calculator,
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "سجل الموظفين — مساحة الموارد البشرية — أكاديميا شفاف",
-  description: "إدارة الموظفين والبيانات الإدارية والمالية لمنصة أكاديميا شفاف",
+  title: "تفاصيل فترة الأجر — مساحة الموارد البشرية — أكاديميا شفاف",
+  description: "متابعة دفعات الأجور التابعة للفترة الشهرية",
 };
 
-interface EmployeesPageProps {
-  searchParams: Promise<{
-    q?: string;
-    status?: string;
-    unitId?: string;
-    page?: string;
-  }>;
+interface PeriodDetailPageProps {
+  params: Promise<{ id: string }>;
 }
 
-export default async function EmployeesPage({ searchParams }: EmployeesPageProps) {
-  const currentUser = await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
+export default async function PeriodDetailPage({ params }: PeriodDetailPageProps) {
+  const user = await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
+  const { id } = await params;
 
-  const params = await searchParams;
-  const q = params.q?.trim() || "";
-  const statusFilter = params.status || "";
-  const unitFilter = params.unitId || "";
-  const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
-  const pageSize = 12;
-
-  // Build where clause (strictement isolé par université)
-  const orgFilter = currentUser.roleCode === "SUPER_ADMIN" && !currentUser.organizationId
+  const batchWhere = user.roleCode === "SUPER_ADMIN" && !user.organizationId
     ? {}
-    : { organizationId: currentUser.organizationId };
+    : { organizationId: user.organizationId };
 
-  const where: Prisma.EmployeeWhereInput = {
-    ...orgFilter,
-  };
-
-  if (statusFilter && ["ACTIVE", "INACTIVE", "SUSPENDED"].includes(statusFilter)) {
-    where.status = statusFilter;
-  }
-
-  if (unitFilter) {
-    where.organizationUnitId = unitFilter;
-  }
-
-  if (q) {
-    where.OR = [
-      { matricule: { contains: q } },
-      { firstName: { contains: q } },
-      { lastName: { contains: q } },
-      { nationalId: { contains: q } },
-    ];
-  }
-
-  const [totalCount, employees, organizationUnits] = await Promise.all([
-    prisma.employee.count({ where }),
-    prisma.employee.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      include: {
-        organizationUnit: true,
+  const period = await prisma.payrollPeriod.findUnique({
+    where: { id },
+    include: {
+      batches: {
+        where: batchWhere,
+        orderBy: { versionNumber: "desc" },
+        include: {
+          _count: {
+            select: {
+              employees: true,
+              records: true,
+              attendanceRecords: true,
+              lineItems: true,
+            },
+          },
+        },
       },
-    }),
-    prisma.organizationUnit.findMany({
-      where: orgFilter,
-      orderBy: { name: "asc" },
-      select: { id: true, name: true },
-    }),
-  ]);
+    },
+  });
 
-  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+  if (!period) {
+    notFound();
+  }
 
-  const statusBadge = (status: string) => {
+  const batchStatusBadge = (status: string) => {
     switch (status) {
-      case "ACTIVE":
+      case "READY_FOR_REVIEW":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
             <CheckCircle2 className="w-3 h-3" />
-            نشط
+            جاهز للمراجعة (READY_FOR_REVIEW)
           </span>
         );
-      case "SUSPENDED":
+      case "CALCULATED":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200">
+            <Calculator className="w-3 h-3" />
+            مُحتسب (CALCULATED)
+          </span>
+        );
+      case "RETURNED_FOR_CORRECTION":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-            <AlertCircle className="w-3 h-3" />
-            معلّق
-          </span>
-        );
-      case "INACTIVE":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
-            <XCircle className="w-3 h-3" />
-            غير نشط
+            <RotateCw className="w-3 h-3" />
+            معاد للتصحيح
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600">
-            {status}
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+            <Clock className="w-3 h-3" />
+            مسودة (DRAFT)
           </span>
         );
     }
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Top Header */}
+    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-teal-50 text-teal-700 rounded-xl border border-teal-200/60">
-              <Users className="w-5 h-5" />
+          <Link
+            href="/agent/payroll-periods"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors mb-2"
+          >
+            <ArrowRight className="w-4 h-4" />
+            <span>العودة لفترات الأجر</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold">
+              <Calendar className="w-5 h-5" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              سجل الموظفين
-            </h1>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                {period.label}
+              </h1>
+              <div className="flex items-center gap-2 text-xs text-slate-500 font-mono mt-0.5">
+                <span>السنة: {period.year}</span>
+                <span>•</span>
+                <span>الشهر: {period.month}</span>
+                <span>•</span>
+                <span>الحالة الحالية: {period.status}</span>
+              </div>
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            إدارة وتتبع ملفات الموظفين، بيانات الرواتب، والهيكل التنظيمي للمؤسسة
-          </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/agent/employees/import"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 shadow-2xs transition-all focus-ring"
-          >
-            <Upload className="w-4 h-4 text-slate-500" />
-            <span>استيراد Excel</span>
-          </Link>
-          <Link
-            href="/agent/employees/new"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 shadow-sm hover:shadow transition-all focus-ring"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>إضافة موظف جديد</span>
-          </Link>
-        </div>
+        <PeriodDetailClient period={period} />
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs">
-        <form method="GET" className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-          <div className="sm:col-span-5 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
-            <input
-              type="text"
-              name="q"
-              defaultValue={q}
-              placeholder="البحث بالرقم الوظيفي، الاسم، اللقب، أو رقم الهوية..."
-              className="w-full pr-10 pl-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-slate-900"
-            />
-          </div>
-
-          <div className="sm:col-span-3">
-            <select
-              name="status"
-              defaultValue={statusFilter}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-slate-900 bg-white"
-            >
-              <option value="">جميع الحالات</option>
-              <option value="ACTIVE">نشط (ACTIVE)</option>
-              <option value="SUSPENDED">معلّق (SUSPENDED)</option>
-              <option value="INACTIVE">غير نشط (INACTIVE)</option>
-            </select>
-          </div>
-
-          <div className="sm:col-span-3">
-            <select
-              name="unitId"
-              defaultValue={unitFilter}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-slate-900 bg-white"
-            >
-              <option value="">جميع الأقسام / المصالح</option>
-              {organizationUnits.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="sm:col-span-1">
-            <button
-              type="submit"
-              className="w-full h-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1"
-            >
-              <Filter className="w-3.5 h-3.5" />
-              <span className="sm:hidden">تصفية</span>
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Employees Table */}
+      {/* Batches Section */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
-        {employees.length === 0 ? (
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900">
+              دفعات الأجر المسجلة لهذه الفترة (Lots de Paie)
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              كل دفعة تتضمن قائمة الموظفين، سجلات الحضور، المنح، والنتائج المحسوبة
+            </p>
+          </div>
+          <span className="text-xs font-mono text-slate-500 font-bold">
+            {period.batches.length} دفعات
+          </span>
+        </div>
+
+        {period.batches.length === 0 ? (
           <div className="p-12 text-center">
-            <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-slate-800">لم يتم العثور على أي موظف</h3>
+            <FileSpreadsheet className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-slate-800">لا توجد أي دفعة أجر منشأة بعد</h3>
             <p className="text-xs text-slate-500 mt-1">
-              جرب تغيير معايير البحث أو قم بإضافة موظف جديد.
+              استخدم زر &quot;إنشاء دفعة أجر جديدة&quot; أعلاه للبدء في ربط الموظفين واحتساب الرواتب.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-right">
-              <thead className="bg-slate-50/70 border-b border-slate-200 text-xs text-slate-500 font-bold">
+            <table className="w-full text-xs text-right">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
                 <tr>
-                  <th className="px-5 py-3.5">الرقم الوظيفي</th>
-                  <th className="px-5 py-3.5">الاسم واللقب</th>
-                  <th className="px-5 py-3.5">الرتبة / المنصب</th>
-                  <th className="px-5 py-3.5">المصلحة / الكلية</th>
-                  <th className="px-5 py-3.5">الراتب الأساسي</th>
+                  <th className="px-5 py-3.5">الدفعة / النسخة</th>
+                  <th className="px-5 py-3.5">التسمية والملاحظات</th>
+                  <th className="px-5 py-3.5">عدد الموظفين</th>
+                  <th className="px-5 py-3.5">سجلات الحضور</th>
+                  <th className="px-5 py-3.5">المنح والخصومات</th>
                   <th className="px-5 py-3.5">الحالة</th>
-                  <th className="px-5 py-3.5 text-center">الإجراءات</th>
+                  <th className="px-5 py-3.5 text-center">الإجراء</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-slate-50/50 transition-colors">
+                {period.batches.map((batch) => (
+                  <tr key={batch.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-5 py-4">
                       <span className="font-mono font-bold text-xs bg-slate-100 text-slate-800 px-2 py-1 rounded-md border border-slate-200">
-                        {emp.matricule}
+                        v{batch.versionNumber}
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <div className="font-bold text-slate-900 text-sm">
-                        {emp.firstName} {emp.lastName}
+                      <div className="font-bold text-slate-900 text-xs">
+                        {batch.label || "دفعة عادية"}
                       </div>
-                      {emp.nationalId && (
-                        <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                          NIN: {emp.nationalId}
+                      {batch.notes && (
+                        <div className="text-[11px] text-slate-400 mt-0.5 max-w-xs truncate">
+                          {batch.notes}
                         </div>
                       )}
                     </td>
-                    <td className="px-5 py-4">
-                      <div className="text-xs font-semibold text-slate-800">
-                        {emp.grade || "غير محدد"}
-                      </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">
-                        {emp.position || "—"}
-                      </div>
+                    <td className="px-5 py-4 font-mono font-bold text-slate-800">
+                      {batch._count.employees} موظف
                     </td>
-                    <td className="px-5 py-4">
-                      <div className="inline-flex items-center gap-1 text-xs text-slate-700">
-                        <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>{emp.organizationUnit?.name || "الإدارة العامة"}</span>
-                      </div>
+                    <td className="px-5 py-4 font-mono text-slate-600">
+                      {batch._count.attendanceRecords} سجل
                     </td>
-                    <td className="px-5 py-4 font-mono font-bold text-xs text-teal-800">
-                      {Number(emp.baseSalary).toLocaleString("fr-FR", {
-                        minimumFractionDigits: 2,
-                      })}{" "}
-                      دج
+                    <td className="px-5 py-4 font-mono text-slate-600">
+                      {batch._count.lineItems} بند
                     </td>
-                    <td className="px-5 py-4">{statusBadge(emp.status)}</td>
+                    <td className="px-5 py-4">{batchStatusBadge(batch.status)}</td>
                     <td className="px-5 py-4 text-center">
                       <Link
-                        href={`/agent/employees/${emp.id}`}
+                        href={`/agent/batches/${batch.id}`}
                         className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 transition-colors"
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>عرض الملف</span>
+                        <span>فتح الدفعة</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
                       </Link>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-xs text-slate-500">
-              إجمالي النتائج: <strong className="text-slate-800">{totalCount}</strong> موظف
-            </span>
-            <div className="flex items-center gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/agent/employees?q=${q}&status=${statusFilter}&unitId=${unitFilter}&page=${page - 1}`}
-                  className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              )}
-              <span className="text-xs font-mono font-bold text-slate-700 px-2">
-                صفحة {page} من {totalPages}
-              </span>
-              {page < totalPages && (
-                <Link
-                  href={`/agent/employees?q=${q}&status=${statusFilter}&unitId=${unitFilter}&page=${page + 1}`}
-                  className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Link>
-              )}
-            </div>
           </div>
         )}
       </div>

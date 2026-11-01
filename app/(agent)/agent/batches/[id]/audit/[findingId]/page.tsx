@@ -17,7 +17,7 @@ interface FindingDetailPageProps {
 export default async function FindingDetailPage({
   params,
 }: FindingDetailPageProps) {
-  await requireRole(["AGENT_RH", "ADMIN"]);
+  await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
   const { id: batchId, findingId } = await params;
 
   const finding = await prisma.auditFinding.findUnique({

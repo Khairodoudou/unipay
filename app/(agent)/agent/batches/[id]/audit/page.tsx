@@ -30,7 +30,7 @@ export default async function BatchAuditPage({
   params,
   searchParams,
 }: BatchAuditPageProps) {
-  await requireRole(["AGENT_RH", "ADMIN"]);
+  await requireRole(["AGENT_RH", "ADMIN", "SUPER_ADMIN"]);
   const { id } = await params;
   const sParams = searchParams ? await searchParams : {};
   const severityFilter = sParams.severity || "";
