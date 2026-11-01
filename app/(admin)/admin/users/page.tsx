@@ -88,6 +88,7 @@ export default async function AdminUsersPage({ searchParams }: UsersPageProps) {
       },
     }),
     prisma.role.findMany({
+      where: { code: { not: "SUPER_ADMIN" } },
       select: { code: true, nameAr: true },
       orderBy: { createdAt: "asc" },
     }),

@@ -15,6 +15,7 @@ export default async function NewUserPage() {
 
   const [roles, organizations] = await Promise.all([
     prisma.role.findMany({
+      where: { code: { not: "SUPER_ADMIN" } },
       select: { id: true, code: true, nameAr: true },
       orderBy: { createdAt: "asc" },
     }),

@@ -66,11 +66,13 @@ export function UserFilterBar({ roles }: UserFilterBarProps) {
             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all text-slate-700"
           >
             <option value="">جميع الأدوار ({roles.length})</option>
-            {roles.map((r) => (
-              <option key={r.code} value={r.code}>
-                {r.nameAr} ({r.code})
-              </option>
-            ))}
+            {roles
+              .filter((r) => r.code !== "SUPER_ADMIN")
+              .map((r) => (
+                <option key={r.code} value={r.code}>
+                  {r.nameAr} ({r.code})
+                </option>
+              ))}
           </select>
         </div>
 

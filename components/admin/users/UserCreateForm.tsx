@@ -187,11 +187,13 @@ export function UserCreateForm({ roles, organizations }: UserCreateFormProps) {
               className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all font-medium text-slate-800"
             >
               <option value="">-- يرجى اختيار الدور الوظيفي --</option>
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.nameAr} ({r.code})
-                </option>
-              ))}
+              {roles
+                .filter((r) => r.code !== "SUPER_ADMIN")
+                .map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.nameAr} ({r.code})
+                  </option>
+                ))}
             </select>
           </div>
 
