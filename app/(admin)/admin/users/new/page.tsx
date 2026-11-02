@@ -11,7 +11,12 @@ export const metadata: Metadata = {
 };
 
 export default async function NewUserPage() {
-  await requireRole("ADMIN");
+  const currentUser = await requireRole(["ADMIN", "SUPER_ADMIN"]);
+
+  const orgWhere =
+    currentUser.roleCode === "SUPER_ADMIN" && !currentUser.organizationId
+      ? { isActive: true }
+      : { id: currentUser.organizationId || "" };
 
   const [roles, organizations] = await Promise.all([
     prisma.role.findMany({
@@ -21,7 +26,7 @@ export default async function NewUserPage() {
     }),
     prisma.organization.findMany({
       select: { id: true, name: true },
-      where: { isActive: true },
+      where: orgWhere,
     }),
   ]);
 

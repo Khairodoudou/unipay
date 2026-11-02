@@ -205,8 +205,12 @@ export function UserCreateForm({ roles, organizations }: UserCreateFormProps) {
             <select
               name="organizationId"
               required
+              defaultValue={organizations[0]?.id || ""}
               className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all font-medium text-slate-800"
             >
+              {organizations.length > 1 && (
+                <option value="">-- يرجى اختيار المؤسسة الجامعية --</option>
+              )}
               {organizations.map((org) => (
                 <option key={org.id} value={org.id}>
                   {org.name}
